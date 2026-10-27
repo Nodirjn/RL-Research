@@ -1,0 +1,30 @@
+experiment: EXP-001
+condition: C1_hist
+env_id: Humanoid-v5
+total_timesteps: 3000000
+n_envs: 4
+normalize: null
+ppo:
+  learning_rate: 0.0003
+  lr_schedule: constant
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+policy_kwargs: {}
+eval:
+  freq: 25000
+  n_episodes: 10
+  seed_offset: 10000
+  final_episodes: 50
+  final_seed_offset: 20000
+checkpoints:
+- 1000000
+- 2000000
+seed: 1
+config_file: configs/exp001_c1_hist.yaml

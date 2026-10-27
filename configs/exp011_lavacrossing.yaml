@@ -1,0 +1,33 @@
+# EXP-011: full PPO baseline on MiniGrid-LavaCrossingS9N1-v0 with the original sparse reward (no shaping).
+# Same hyperparameters and wrappers as the EXP-010 pilot (RL Zoo minigrid-defaults, unchanged).
+# Changed from the pilot (see RESEARCH_LOG.md): 3M steps; evaluation is stochastic (actions sampled from
+# the policy), because the greedy policy of this memoryless, partially observing agent gets stuck in loops.
+experiment: EXP-011
+condition: LavaCrossingS9N1_sparse
+env_id: MiniGrid-LavaCrossingS9N1-v0
+wrappers: [minigrid.wrappers.FlatObsWrapper]
+total_timesteps: 3000000
+n_envs: 8
+normalize:
+  norm_obs: true
+  norm_reward: true
+  gamma: 0.99
+ppo:
+  learning_rate: 2.5e-4
+  lr_schedule: constant
+  n_steps: 128
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+policy_kwargs: {}
+eval:
+  freq: 20000
+  n_episodes: 20
+  seed_offset: 10000
+  final_episodes: 100
+  final_seed_offset: 20000
+  deterministic: false
+checkpoints: [1000000, 2000000]

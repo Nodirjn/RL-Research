@@ -1,0 +1,2 @@
+# Repository copies of evaluation logs omit the machine-specific wall-clock column.
+**/eval.csv filter=dropwall

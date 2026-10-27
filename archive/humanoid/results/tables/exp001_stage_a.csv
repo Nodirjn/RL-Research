@@ -1,0 +1,4 @@
+run,condition,seed,timesteps,steps_per_s,train_h,last5@1M,fall@1M,final50,final50_sd,final50_len,final50_fall,final50_xvel
+C2_cleanrl_1M_s0,C2_cleanrl_1M,0,1001472,401,0.69,585.3,1.0,599.2,148.7,120.6,1.0,0.34
+C2_cleanrl_1M_s1,C2_cleanrl_1M,1,1001472,399,0.7,748.7,1.0,767.5,174.3,148.7,1.0,0.55
+C2_cleanrl_1M_s2,C2_cleanrl_1M,2,1001472,397,0.7,526.9,1.0,559.5,104.5,111.8,1.0,0.4

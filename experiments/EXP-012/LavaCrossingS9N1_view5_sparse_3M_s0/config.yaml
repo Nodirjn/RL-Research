@@ -1,0 +1,36 @@
+experiment: EXP-012
+condition: LavaCrossingS9N1_view5_sparse
+env_id: MiniGrid-LavaCrossingS9N1-v0
+env_kwargs:
+  agent_view_size: 5
+wrappers:
+- minigrid.wrappers.FlatObsWrapper
+total_timesteps: 3000000
+n_envs: 8
+normalize:
+  norm_obs: true
+  norm_reward: true
+  gamma: 0.99
+ppo:
+  learning_rate: 0.00025
+  lr_schedule: constant
+  n_steps: 128
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+policy_kwargs: {}
+eval:
+  freq: 20000
+  n_episodes: 20
+  seed_offset: 10000
+  final_episodes: 100
+  final_seed_offset: 20000
+  deterministic: false
+checkpoints:
+- 1000000
+- 2000000
+seed: 0
+config_file: configs/exp012_lavacrossing.yaml

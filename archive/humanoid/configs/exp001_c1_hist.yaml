@@ -1,0 +1,28 @@
+# EXP-001 C1 — historical configuration (commented-out train.py / handover §2B):
+# SB3 PPO defaults, 4 parallel envs, no observation/reward normalization.
+experiment: EXP-001
+condition: C1_hist
+env_id: Humanoid-v5
+total_timesteps: 3000000
+n_envs: 4
+normalize: null
+ppo:
+  learning_rate: 3.0e-4
+  lr_schedule: constant
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.0
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+policy_kwargs: {}            # SB3 default: separate 64x64 tanh MLPs, orthogonal init, log_std 0
+eval:
+  freq: 25000                # env steps between periodic evaluations
+  n_episodes: 10             # deterministic episodes per evaluation (seeds 10000-10009)
+  seed_offset: 10000
+  final_episodes: 50         # held-out evaluation of the final policy (seeds 20000-20049)
+  final_seed_offset: 20000
+checkpoints: [1000000, 2000000]

@@ -1,0 +1,105 @@
+<mujoco model="humanoid_with_obstacles">
+    <compiler angle="degree" inertiafromgeom="true"/>
+    <default>
+        <joint armature="1" damping="1" limited="true"/>
+        <geom contype="1" conaffinity="1" condim="3" friction=".7 .1 .1" density="1000"/>
+    </default>
+    <option integrator="RK4" timestep="0.003"/>
+
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1=".4 .5 .6" rgb2="0 0 0" width="100" height="100"/>
+        <texture name="grid" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 .15 .2" width="512" height="512"/>
+        <material name="grid" texture="grid" texrepeat="10 10"/>
+    </asset>
+
+    <worldbody>
+        <geom name="floor" type="plane" size="10 10 .1" material="grid"/>
+        <light directional="true" diffuse=".8 .8 .8" specular=".2 .2 .2" pos="0 0 5" dir="0 0 -1"/>
+
+        <!-- Muhitdagi to'siqlar -->
+        <geom name="box_obstacle" type="box" size="0.4 0.4 0.2" pos="1.5 0 0.2" rgba="0.8 0.2 0.2 1"/>
+        <geom name="sphere_obstacle" type="sphere" size="0.3" pos="0 1.5 0.3" rgba="0.2 0.8 0.2 1"/>
+
+        <!-- Humanoid Robot -->
+        <body name="torso" pos="0 0 1.4">
+            <freejoint name="root"/>
+            <geom name="torso1" type="capsule" fromto="0 -.07 0 0 .07 0" size=".07"/>
+            <geom name="head" type="sphere" pos="0 0 .19" size=".09"/>
+            <geom name="uwaist" type="capsule" fromto="0 -.06 -.12 0 .06 -.12" size=".06"/>
+
+            <!-- O'ng oyoq -->
+            <body name="right_thigh" pos="0 -.1 -.04">
+                <joint name="right_hip_x" type="hinge" axis="1 0 0" range="-25 5"/>
+                <joint name="right_hip_z" type="hinge" axis="0 0 1" range="-60 35"/>
+                <joint name="right_hip_y" type="hinge" axis="0 1 0" range="-120 20"/>
+                <geom name="right_thigh1" type="capsule" fromto="0 0 0 0 0 -.34" size=".06"/>
+                <body name="right_shin" pos="0 0 -.30">
+                    <joint name="right_knee" type="hinge" axis="0 -1 0" range="-160 0"/>
+                    <geom name="right_shin1" type="capsule" fromto="0 0 0 0 0 -.3" size=".05"/>
+                    <body name="right_foot" pos="0 0 -.38">
+                        <joint name="right_ankle" type="hinge" axis="0 1 0" range="-50 50"/>
+                        <geom name="right_foot" type="box" pos=".03 0 0" size=".08 .05 .02"/>
+                    </body>
+                </body>
+            </body>
+
+            <!-- Chap oyoq -->
+            <body name="left_thigh" pos="0 .1 -.04">
+                <joint name="left_hip_x" type="hinge" axis="-1 0 0" range="-25 5"/>
+                <joint name="left_hip_z" type="hinge" axis="0 0 -1" range="-60 35"/>
+                <joint name="left_hip_y" type="hinge" axis="0 1 0" range="-120 20"/>
+                <geom name="left_thigh1" type="capsule" fromto="0 0 0 0 0 -.34" size=".06"/>
+                <body name="left_shin" pos="0 0 -.30">
+                    <joint name="left_knee" type="hinge" axis="0 -1 0" range="-160 0"/>
+                    <geom name="left_shin1" type="capsule" fromto="0 0 0 0 0 -.3" size=".05"/>
+                    <body name="left_foot" pos="0 0 -.38">
+                        <joint name="left_ankle" type="hinge" axis="0 1 0" range="-50 50"/>
+                        <geom name="left_foot" type="box" pos=".03 0 0" size=".08 .05 .02"/>
+                    </body>
+                </body>
+            </body>
+
+            <!-- O'ng qo'l -->
+            <body name="right_upper_arm" pos="0 -.17 .06">
+                <joint name="right_shoulder1" type="hinge" axis="2 1 1" range="-85 60"/>
+                <joint name="right_shoulder2" type="hinge" axis="0 -1 1" range="-85 60"/>
+                <geom name="right_upper_arm" type="capsule" fromto="0 0 0 0 -.16 -.16" size=".04"/>
+                <body name="right_lower_arm" pos="0 -.16 -.16">
+                    <joint name="right_elbow" type="hinge" axis="0 -1 1" range="-90 50"/>
+                    <geom name="right_lower_arm" type="capsule" fromto="0 0 0 0 -.12 -.12" size=".031"/>
+                </body>
+            </body>
+
+            <!-- Chap qo'l -->
+            <body name="left_upper_arm" pos="0 .17 .06">
+                <joint name="left_shoulder1" type="hinge" axis="2 -1 1" range="-60 85"/>
+                <joint name="left_shoulder2" type="hinge" axis="0 1 1" range="-60 85"/>
+                <geom name="left_upper_arm" type="capsule" fromto="0 0 0 0 .16 -.16" size=".04"/>
+                <body name="left_lower_arm" pos="0 .16 -.16">
+                    <joint name="left_elbow" type="hinge" axis="0 1 1" range="-90 50"/>
+                    <geom name="left_lower_arm" type="capsule" fromto="0 0 0 0 .12 -.12" size=".031"/>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+
+    <!-- Motorlar -->
+    <actuator>
+        <motor joint="right_hip_x" gear="100"/>
+        <motor joint="right_hip_z" gear="100"/>
+        <motor joint="right_hip_y" gear="300"/>
+        <motor joint="right_knee" gear="200"/>
+        <motor joint="right_ankle" gear="100"/>
+        <motor joint="left_hip_x" gear="100"/>
+        <motor joint="left_hip_z" gear="100"/>
+        <motor joint="left_hip_y" gear="300"/>
+        <motor joint="left_knee" gear="200"/>
+        <motor joint="left_ankle" gear="100"/>
+        <motor joint="right_shoulder1" gear="100"/>
+        <motor joint="right_shoulder2" gear="100"/>
+        <motor joint="right_elbow" gear="100"/>
+        <motor joint="left_shoulder1" gear="100"/>
+        <motor joint="left_shoulder2" gear="100"/>
+        <motor joint="left_elbow" gear="100"/>
+    </actuator>
+</mujoco>

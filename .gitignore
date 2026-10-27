@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Heavy experiment artifacts (kept on disk, not in git)
+experiments/**/checkpoints/
+experiments/**/*.zip
+experiments/**/*.pkl
+*.mp4
+
+# Also kept on disk only: models anywhere (incl. archive/), TensorBoard logs, raw training
+# monitors, archived Humanoid videos. Back them up separately.
+**/checkpoints/
+**/*.zip
+**/*.pkl
+**/tb/
+**/train_monitor.csv
+archive/**/*.gif
+archive/**/*.mp4
+
+# Office lock files
+~$*
+
+# Kept on disk only, not in the public repository: internal notes, correspondence,
+# and machine/run metadata (run info, training logs, TensorBoard event files).
+RESEARCH_LOG.md
+CLAUDE.md
+RL_tadqiqot_jurnali.*
+RL_batafsil_reja.*
+reports/*message*
+reports/*speech*
+reports/*progress_report*
+**/meta.json
+**/*.log
+**/events.out.tfevents.*
+archive/humanoid/legacy/exp000b_repro_historical/log_seed*.txt
+archive/humanoid/legacy/exp000b_repro_historical/result_seed*.json
