@@ -6,6 +6,9 @@ The study follows an experiment-first plan: train a standard PPO baseline with t
 reward, analyse how it behaves and fails, change one environmental factor, and then test
 potential-based reward shaping (PBRS) against that baseline.
 
+The full plan, what was done at each stage and why, and every decision with its reason are in
+[`documentation/`](documentation/README.md).
+
 ## Setup
 
 - **Tasks:** `MiniGrid-SimpleCrossingS9N1-v0` (one wall line with one gap) and
