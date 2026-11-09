@@ -1,7 +1,7 @@
 # Stage 8 — EXP-020: potential-based shaping against the sparse baseline (pre-registration)
 
 **Workflow steps:** 10–11 (method; validation and ablations). **Status:** pre-registered, not started.
-**Code version:** commit `<hash>` (the configs, the launcher and the analysis scripts used for this
+**Code version:** commit `4c6b0c6` (the configs, the launcher and the analysis scripts used for this
 experiment). Everything below was fixed before any shaping run.
 
 ## Questions
