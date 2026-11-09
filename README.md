@@ -81,6 +81,9 @@ python src/analyze_minigrid.py experiments/EXP-011 experiments/EXP-012 --name ex
 python src/permutation_test.py results/tables/exp011_vs_exp012_runs.csv sparse view5_sparse
 python src/loop_metrics.py experiments/EXP-011 experiments/EXP-012 --name exp011_exp012
 python src/behavior.py experiments/EXP-011 experiments/EXP-012 --name exp011_exp012
+
+# shape of the Euclidean and BFS (geodesic) potentials on 1000 maps (no training needed)
+python src/potential_shape.py --maps 1000
 ```
 
 The launchers `src/run_exp01*.sh` run every seed of an experiment in parallel. They write into

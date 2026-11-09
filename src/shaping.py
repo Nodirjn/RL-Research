@@ -14,7 +14,7 @@ Potentials (the agent's cell p, the goal g; distances in cells):
                 cells the agent can stand on without dying (no walls, no lava)
     none        no distance term (Phi = 0 unless lava_penalty is set): with no lava penalty either, the
                 reward is unchanged and only the episode records below are added
-    lava_penalty c > 0 adds -c to Phi(p) when a 4-neighbour of p is lava (the professor's lava term)
+    lava_penalty c > 0 adds -c to Phi(p) when a 4-neighbour of p is lava (the lava-proximity term)
 With offset = 0, Phi(start) = -1 and Phi rises to about -1/D next to the goal.
 
 naive = True is the negative control, not PBRS: F = max(0, Phi(s') - Phi(s)), a bonus for every step that

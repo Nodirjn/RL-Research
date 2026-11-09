@@ -1,0 +1,5 @@
+task,potential,maps,start_reaches_goal,start_side_reach_goal,stuck_from_start,dead_end_next_to_line
+SimpleCrossing,euclidean,1000,0.641,0.4411,359,1.0
+SimpleCrossing,bfs,1000,1.0,1.0,0,
+LavaCrossing,euclidean,1000,0.641,0.4411,359,1.0
+LavaCrossing,bfs,1000,1.0,1.0,0,

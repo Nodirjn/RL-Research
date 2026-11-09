@@ -68,8 +68,8 @@ Working research questions (final wording after the literature review):
 
 1. Does PBRS with a distance potential improve the sample efficiency of PPO (area under the success curve,
    steps to 50%/80% success) on SimpleCrossing and LavaCrossing, without lowering final success?
-2. Does the shape of the potential matter: straight-line (Euclidean) distance against path-length (BFS)
-   distance, and with or without a lava-proximity term?
+2. Does the shape of the potential matter: straight-line (Euclidean) distance against path-length (BFS,
+   geodesic) distance, and with or without a lava-proximity term?
 3. Does the potential form matter: PBRS against a naive progress bonus that is not potential-based?
 4. Is the benefit of shaping larger when the agent sees less (5×5 view)?
 
@@ -79,7 +79,10 @@ Hypotheses, stated before any shaping result (each is a prediction to test, not 
 - **H-dead-end.** On the start side of the line, the Euclidean potential is highest at the cell next to the
   line that is closest to the goal, not at the gap. For a vertical line in column k, that cell is (k − 1, 7):
   a dead end unless the gap is in the last row. The Euclidean potential can therefore pull the agent away
-  from the gap. The BFS potential increases only along paths through the gap and has no such dead end.
+  from the gap. The BFS potential increases only along paths through the gap and has no such dead end. On
+  1000 maps, steepest ascent of the Euclidean potential from the start stops next to the line on 36% of them
+  ([stage 7](stages/07_shaping_method.md#shape-of-the-two-distance-potentials-no-learning)); this describes the
+  signal, not learning.
 - **H-lava-a.** Take the Euclidean potential Φ = −d/D. Because Φ = 0 after the episode terminates, the step
   into lava from a cell at distance d earns
 
@@ -95,12 +98,40 @@ Hypotheses, stated before any shaping result (each is a prediction to test, not 
   into it (Φ = 0 after termination). It only penalizes approaching lava (about −c). The only gap lies in the
   lava line, so the agent must stand next to lava to cross. Because the main failure is not crossing, this
   term may make crossing harder.
-- **H-offset.** With the shifted potential Φ = 1 − d/D, Φ ≥ 0 on every cell, so the last step of a terminated
-  episode earns F = −Φ(s) ≤ 0. Dying is now penalized, but so is reaching the goal: from the cell next to the
-  goal, F = −(1 − 1/8.485) = −0.882. This is expected to trade fewer early deaths against a weaker goal signal.
+- **H-offset.** The shifted potential Φ = 1 − d/D is the Euclidean potential plus a constant 1. In terms of
+  the bonus, the constant adds
+
+  ```
+  (γ − 1) · 1 = −0.01   to every step that does not terminate the episode
+  −1                    to a terminating step (goal or lava)
+  ```
+
+  Two effects follow from this one change, so they are tested together.
+  (a) *Terminal steps.* Φ ≥ 0 on every cell, so the last step of a terminated episode earns F = −Φ(s) ≤ 0.
+  Dying is now penalized, but so is reaching the goal: from the cell next to the goal,
+  F = −(1 − 1/8.485) = −0.882. This is expected to trade fewer early deaths against a weaker goal signal.
+  (b) *Stalling and looping.* Φ depends only on the cell, so a step that leaves the cell unchanged (a turn, a
+  step into a wall, or one of the four actions that do nothing in these tasks) earns
+
+  ```
+  F = (γ − 1) · Φ(s)      +0.01 · d/D (Euclidean),   −0.01 · (1 − d/D) (shifted)
+  ```
+
+  and a cycle of K steps back to the same state earns (γ^K − 1) · Φ(s) in the discounted sum. The offset
+  thus turns a small bonus for stalling and looping into a small cost. Because the same −0.01 is added to
+  every non-terminating step, the offset never changes which of two such steps from a state earns more: at the
+  Euclidean dead end the order of the immediate bonuses stays the same, while the BFS potential changes it.
+  This is a property of the bonuses, not a prediction about learning. Learning can still differ: PBRS acts
+  like starting the value estimates at Φ (Wiewiora, 2003; H-view), so the offset makes the starting
+  estimates more optimistic, which can change exploration. Whether the shifted potential reduces dead-end
+  loops under PPO is an open question for EXP-020.
 - **H-naive.** The naive bonus F = max(0, Φ(s′) − Φ(s)) pays for every step toward the goal but never charges
   a step away. A move forward and back therefore earns a net positive bonus, and repeating it earns more (the
-  cycle argument of Ng et al., 1999). It should increase looping, which is already the main failure.
+  cycle argument of Ng et al., 1999). It should increase looping, which is already the main failure. With
+  γ = 0.99, PBRS also gives a short cycle a small bonus where Φ < 0 (H-offset, b), but the discounted shaping
+  collected from a state is the same, −Φ(s), whatever the agent does afterwards (up to truncation). Under the
+  naive bonus, repeating a 6-step cycle forever collects up to (1/D) / (1 − γ⁶) ≈ 2, about twice the +1 that
+  a direct path to the goal earns.
 - **H-view.** PPO's advantage estimate (GAE) is built from the TD error. With shaping, this TD error equals
   the unshaped one computed with the critic V replaced by V + Φ:
 
@@ -142,7 +173,7 @@ Hypotheses, stated before any shaping result (each is a prediction to test, not 
 | D | d at the start cell (1, 1): D = √72 ≈ 8.485 |
 | b | Length of the shortest path from the agent's cell to the goal that avoids walls and lava, in up/down/left/right moves (found by breadth-first search, BFS) |
 | B | b at the start cell; it depends on the map |
-| c | The lava penalty (> 0), fixed before the run |
+| c | The lava penalty (> 0), fixed by a rule before any run ([section 5.3](#53-shaping)) |
 | V(s) | The critic's value estimate of state s |
 
 ### 5.3 Shaping
@@ -176,9 +207,21 @@ Potentials:
 |---|---|---|
 | Euclidean | Φ = −d / D | Core condition: progress toward the goal |
 | Euclidean + lava | Φ = −d / D − c on cells next to lava (up, down, left or right); Φ = −d / D elsewhere | Core condition: risk aversion near lava (LavaCrossing only) |
-| BFS | Φ = −b / B | Extension. b goes around walls and lava, so it decreases only along paths through the gap |
+| BFS (geodesic) | Φ = −b / B | Core condition. b goes around walls and lava, so it decreases only along paths through the gap |
 | Shifted (ablation) | Φ = 1 − d / D | Extension, LavaCrossing only |
-| Naive control | Not a potential: F = max(0, Φ(s′) − Φ(s)) with the Euclidean Φ and no γ | Extension. At termination it uses Φ of the cell the agent ends on, not 0 |
+| Naive control | Not a potential: F = max(0, Φ(s′) − Φ(s)) with the Euclidean Φ and no γ | Core condition (ablation). At termination it uses Φ of the cell the agent ends on, not 0 |
+
+**Lava penalty size.** c is fixed by a rule before any run, not tuned:
+
+```
+c = 1/D ≈ 0.118
+```
+
+d changes by at most 1 per move, so 1/D is the largest change of the Euclidean potential in one move.
+Stepping onto a cell next to lava then costs about as much as the best step toward the goal earns, so the
+lava term is on the same scale as the distance signal and neither dominates. The gap cell lies next to lava,
+so entering it earns at best about zero; this is the risk stated in H-lava-b. Other values of c are not
+tested ([section 10](#10-threats-to-validity-and-limitations)).
 
 **Why both distance potentials give the same total.** Take an episode of T steps that starts in state s₀ and
 ends in state s_T, and let F₀, F₁, … be the bonuses of its steps. In the discounted sum, every intermediate
@@ -204,19 +247,19 @@ Each experiment changes one thing against the baseline. "Seeds × steps" is per 
 | EXP-012 | Environmental factor: 5×5 view | both | 5 × 3M | How does a smaller view change learning and behavior? | Done |
 | EXP-020 | PBRS, Euclidean potential | both | 10 × 3M | Does a distance signal speed up learning and reduce loops? | Planned (core) |
 | EXP-020 | PBRS, Euclidean + lava-proximity potential | LavaCrossing | 10 × 3M | Does the lava term reduce deaths, or also hinder crossing? | Planned (core) |
+| EXP-020 | PBRS, BFS (geodesic) potential | both | 10 × 3M | Does the Euclidean dead end mislead the agent? | Planned (core) |
+| EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Planned (core) |
 | EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Planned (core) |
-| EXP-020 | PBRS, BFS potential | both | 10 × 3M | Does the Euclidean dead end mislead the agent? | Planned (extension) |
 | EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Planned (extension) |
-| EXP-020 | Naive control | both | 10 × 3M | Why does the potential form matter? | Planned (extension) |
 | EXP-021 | 5×5 view × shaping | both | to be fixed | Does shaping help more with a smaller view? | Planned |
 
-The core conditions answer the main question (RQ1); the extensions refine the answer (RQ2, RQ3). The core
-conditions run first, and if not all conditions can be run, the extensions are dropped first. The baseline
+The core conditions answer RQ1 to RQ3; the extension (the shifted potential) refines the answer. The core
+conditions run first, and if not all conditions can be run, the extension is dropped first. The baseline
 has 5 seeds per task; the main comparison is planned with 10, because the LavaCrossing baseline varies
 strongly between seeds (final-success SD 0.29). The final number of seeds is fixed in the pre-registration.
 
-Before EXP-020 starts, a pre-registration fixes the conditions, the lava penalty c, the seeds, the metrics,
-the decision rules and the commit hash.
+Before EXP-020 starts, a pre-registration fixes the conditions, the lava penalty c (by the rule in
+section 5.3), the seeds, the metrics, the decision rules and the commit hash.
 
 ## 7. Metrics
 
@@ -236,6 +279,7 @@ Each metric is computed per run.
 | Revisit ratio | Fraction of steps that end in an already visited state (stochastic) | Secondary |
 | Never-crossed timeouts † | Fraction of timed-out episodes that never cross the obstacle line | Secondary |
 | First 500k steps † | Success, death and timeout rates of training episodes; tests H-lava-a and H-offset | Secondary |
+| Shaping return by outcome † | Sum of F per training episode, reported separately for successes, deaths and timeouts, with the episode length. It is undiscounted, so with Φ < 0 it grows with the length (+3.24 for a timeout spent turning at the start); it shows where the shaping signal goes (H-offset, H-naive) | Secondary |
 | Original and shaped return | Logged separately; evaluation uses the original reward only | Control |
 
 Periodic evaluation: every 20k steps, 20 episodes on fixed held-out seeds (10000–10019), stochastic policy.
@@ -260,6 +304,7 @@ To read and verify before the paper cites them:
 | Müller & Kudenko (2025), arXiv:2502.01307 | Shifting a potential; background for H-offset | Existence checked; to read |
 | Agarwal et al. (2021), NeurIPS | Reliable evaluation with few seeds (bootstrap CI, probability of improvement) | To verify |
 | Pinto et al. (2018) | Asymmetric actor-critic: a critic with privileged state; must be compared with H-view | To read |
+| Weihs et al. (2021), NeurIPS | Imitating an expert that sees more than the student (incl. a shortest-path expert on MiniGrid) can give weak policies; background for not imitating the BFS path | Existence checked; to read |
 | Devlin & Kudenko (2012); Raileanu (2020) | Candidate references; relevance to be checked | To verify |
 
 Every entry of the bibliography is checked against its primary source before it is used.
@@ -279,12 +324,18 @@ Every entry of the bibliography is checked against its primary source before it 
   seeds are planned for the main comparison.
 - **Intermediate policies.** Behavior was analyzed for the final policies only; the 1M and 2M checkpoints
   are kept for later analysis if the paper needs it.
+- **Lava penalty size.** One value of c, fixed by a rule (section 5.3). How the results depend on c is not
+  tested.
+- **Imitating the BFS path.** The geodesic potential uses the full map during training, and so would a
+  shortest-path expert to imitate. Imitation learning is a different way to use this information, with a known
+  weakness when the expert sees more than the student (Weihs et al., 2021). It is not studied here and is
+  discussed in the paper.
 
 ## 11. Order of the remaining work
 
 1. Pre-register EXP-020: the conditions, the lava penalty c, the seeds, the metrics, the decision rules and
    the commit hash.
-2. Run the core conditions of EXP-020, then the extensions.
+2. Run the core conditions of EXP-020, then the extension.
 3. Literature review in parallel with the runs; then the research gap.
 4. Run EXP-021 (5×5 view × shaping).
 5. Analysis with the same scripts as the baseline (`analyze_minigrid.py`, `loop_metrics.py`, `behavior.py`)

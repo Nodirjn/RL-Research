@@ -102,7 +102,7 @@ Timed-out episodes that **never crossed** the line (pooled over 5 seeds):
   distance to the goal shrinks (Φ = −d/D, see the [notation](../research_plan.md#52-notation)). On the start
   side of the line it is therefore highest at the cell next to the line that is closest to the goal, not at
   the gap, and it can pull the agent into a dead end. A path-length (BFS) potential has no such dead end.
-  The BFS potential was already planned as an extension; this analysis gives a concrete reason for it.
+  The BFS potential was already planned; this analysis gives a concrete reason for it.
 - **Consequence for the lava-proximity potential (H-lava-b):** the gap lies in the lava line itself, so the
   agent must stand next to lava to cross. A penalty near lava may make the main failure, not crossing, worse.
   This expectation is stated before the condition is run.

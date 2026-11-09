@@ -10,7 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from common import make_env  # noqa: E402
-from shaping import PBRS, bfs_distances  # noqa: E402
+from shaping import NEIGHBOURS, PBRS, bfs_distances  # noqa: E402
 from common import run_episodes  # noqa: E402
 from test_minigrid_outcome import FORWARD, LAVA, LEFT, SIMPLE, RandomPolicy, place_facing  # noqa: E402
 
@@ -52,10 +52,13 @@ def test_every_nonterminal_step_gets_gamma_phi_next_minus_phi():
         assert reward == pytest.approx(GAMMA * euclidean_phi(env) - phi)
 
 
-def test_turning_in_place_gives_the_small_gamma_bonus():
-    env = shaped(SIMPLE)
-    _, reward, *_ = env.step(LEFT)
-    assert reward == pytest.approx((GAMMA - 1) * -1.0)  # +0.01 at the start, d/D = 1
+def test_every_action_that_leaves_the_cell_gets_the_small_gamma_bonus():
+    # Phi depends only on the cell: turns and the four actions that do nothing here (pickup, drop, toggle, done)
+    for action in (0, 1, 3, 4, 5, 6):
+        env = shaped(SIMPLE)
+        _, reward, *_ = env.step(action)
+        assert tuple(env.unwrapped.agent_pos) == (1, 1)
+        assert reward == pytest.approx((GAMMA - 1) * -1.0)  # +0.01 at the start, d/D = 1
 
 
 def test_goal_step_uses_zero_terminal_potential():
@@ -159,6 +162,54 @@ def test_bfs_potential_follows_the_path_through_the_gap():
     assert gap in path and len(path) - 1 == env.scale
 
 
+def test_bfs_distance_matches_an_independent_shortest_path_on_many_maps():
+    # scipy's graph search on the 4-neighbour graph of the cells the agent can stand on (empty or goal).
+    from scipy.sparse import lil_matrix
+    from scipy.sparse.csgraph import shortest_path
+
+    for cfg in (SIMPLE, LAVA):
+        env = make_env(cfg)
+        for seed in range(300):
+            env.reset(seed=seed)
+            grid = env.unwrapped.grid
+            free = [(x, y) for x in range(9) for y in range(9) if grid.get(x, y) is None or grid.get(x, y).type == "goal"]
+            index = {cell: i for i, cell in enumerate(free)}
+            graph = lil_matrix((len(free), len(free)))
+            for (x, y), i in index.items():
+                for nxt in ((x + 1, y), (x, y + 1)):
+                    if nxt in index:
+                        graph[i, index[nxt]] = 1
+            expected = shortest_path(graph.tocsr(), directed=False, unweighted=True, indices=index[(7, 7)])
+            dist = bfs_distances(grid, (7, 7))
+            assert np.isfinite(expected).all()  # every cell the agent can stand on can reach the goal
+            assert all(dist[cell] == expected[i] for cell, i in index.items())
+            assert np.isinf(dist).sum() == 81 - len(free)  # walls and lava only
+
+
+def test_following_the_bfs_potential_with_real_actions_reaches_the_goal():
+    # Ties the potential to the environment's own movement: turn toward the neighbour one cell closer,
+    # step forward. Every step must land on that cell, raise Phi by exactly 1/D_BFS and never die.
+    from minigrid.core.constants import DIR_TO_VEC
+
+    for cfg in (SIMPLE, LAVA):
+        for seed in range(100):
+            env = shaped(cfg, seed=seed, potential="bfs")
+            base = env.unwrapped
+            forward_steps, terminated = 0, False
+            while not terminated:
+                x, y = (int(v) for v in base.agent_pos)
+                target = min(((x + dx, y + dy) for dx, dy in NEIGHBOURS), key=lambda c: env.bfs[c])
+                while tuple(int(v) for v in DIR_TO_VEC[base.agent_dir]) != (target[0] - x, target[1] - y):
+                    env.step(LEFT)
+                phi = env.phi()
+                _, _, terminated, truncated, info = env.step(FORWARD)
+                forward_steps += 1
+                assert tuple(int(v) for v in base.agent_pos) == target and not truncated
+                if not terminated:
+                    assert env.phi() == pytest.approx(phi + 1 / env.scale)
+            assert info["outcome"] == "success" and forward_steps == env.scale
+
+
 def test_euclidean_potential_peaks_at_the_corner_nearest_the_goal_not_at_the_gap():
     # The behavior-analysis argument: on the start side of a vertical line at x = c, Euclidean Phi is
     # highest at (c - 1, 7), which is a dead end unless the gap is in the last row.
@@ -227,6 +278,23 @@ def test_naive_control_pays_for_going_back_and_forth():
     assert (tuple(naive.unwrapped.agent_pos), naive.unwrapped.agent_dir) == start
     assert progress > 0 and totals[0] == pytest.approx(3 * progress)  # paid once per cycle
     assert totals[1] == pytest.approx(0.0)  # PBRS: a cycle earns nothing (gamma = 1)
+
+
+def test_with_the_ppo_gamma_a_cycle_earns_a_small_bonus_whose_sign_follows_phi():
+    # A K-step cycle back to state s earns, discounted, gamma^K * Phi(s) - Phi(s) = (gamma^K - 1) * Phi(s):
+    # a small bonus where Phi < 0 (Euclidean), a small cost where Phi > 0 (shifted, offset 1).
+    cycle = [LEFT, LEFT, FORWARD, LEFT, LEFT, FORWARD]  # from the cell right of the start, back to it
+    for seed in range(50):
+        if shaped(SIMPLE, seed=seed).unwrapped.grid.get(2, 1) is None:
+            break
+    for offset in (0.0, 1.0):
+        env = shaped(SIMPLE, seed=seed, offset=offset)
+        env.step(FORWARD)
+        state, phi = (tuple(env.unwrapped.agent_pos), env.unwrapped.agent_dir), env.last_phi
+        total = sum(GAMMA ** t * env.step(action)[1] for t, action in enumerate(cycle))
+        assert (tuple(env.unwrapped.agent_pos), env.unwrapped.agent_dir) == state == ((2, 1), 0)
+        assert total == pytest.approx((GAMMA ** len(cycle) - 1) * phi)
+        assert np.sign(total) == -np.sign(phi) != 0
 
 
 def test_naive_control_uses_the_cell_it_ends_on_even_at_termination():

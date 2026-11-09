@@ -1,8 +1,10 @@
 # Stage 7 — Shaping method: implementation and tests (no shaping run yet)
 
 **Workflow step:** 10 (method), prepared ahead of steps 7–9 (see the note in the
-[research plan](../research_plan.md#2-workflow)). **Status:** code written and tested. The shaping experiment
-(EXP-020) starts after its pre-registration: the core conditions first, the extensions after them.
+[research plan](../research_plan.md#2-workflow)). **Status:** code written and tested; the BFS (geodesic)
+potential verified against an independent shortest-path computation and the environment's own movement. The
+shaping experiment (EXP-020) starts after its pre-registration: the core conditions first, the extension
+after them.
 
 ## Question
 
@@ -57,6 +59,11 @@ F(s, s′) = γ · Φ(s′) − Φ(s)
   between them isolates *how* the signal is spread over the steps. Cells farther from the goal than the
   start get Φ < −1 (in 210 of 500 maps, down to −1.5). The equality holds only for the discounted sum, not
   for truncated episodes, and not for the shifted potential (Φ = 0 at the start).
+- **Geodesic distance in cell moves, not in actions.** b counts moves between cells. The agent also needs
+  turns (a turn is one action), so b is not the number of actions to the goal. Counting cell moves keeps Φ a
+  function of the cell only, like the Euclidean potential, so the two potentials differ only in how they
+  measure distance. A potential over (cell, direction) that counts turns is a possible variant; it is not
+  planned.
 - **Naive control.** F = max(0, Φ(s′) − Φ(s)), with no γ. At termination it uses the potential of the cell
   the agent actually ends on. With the PBRS convention (Φ = 0 after termination) instead, entering lava would
   earn max(0, 0 − Φ(s)) = +d/D, and the control would test that convention rather than the missing
@@ -64,7 +71,7 @@ F(s, s′) = γ · Φ(s′) − Φ(s)
 
 ## Tests
 
-`tests/test_shaping.py` (26 tests in the whole suite, all passing) checks, among others:
+`tests/test_shaping.py` (29 tests in the whole suite, all passing) checks, among others:
 
 - the formula on random steps, the goal step and the lava step with Φ = 0 after termination (the lava step
   gets F = −Φ(s) > 0, as H-lava-a predicts, and is still counted as a death), and the truncation formula;
@@ -73,17 +80,62 @@ F(s, s′) = γ · Φ(s′) − Φ(s)
 - with γ = 0.99, the discounted shaping return of a terminated episode is +1 for both distance potentials;
 - along the shortest path from the start, the path length b falls by exactly 1 per step (so the BFS potential
   rises by 1/B), the path has exactly B steps, and it goes through the gap;
+- **geodesic distance, independent check:** on 300 maps per task, b equals the shortest path computed by a
+  different algorithm (scipy's graph search on the 4-neighbour graph of the cells the agent can stand on).
+  Every such cell can reach the goal, so b is finite wherever the agent can be; only walls and lava have no
+  distance;
+- **geodesic potential, real actions:** on 100 maps per task, an agent turns toward the neighbour one cell
+  closer and steps forward. Every step lands on that cell and raises Φ by exactly 1/B, no step enters lava,
+  and the episode ends at the goal after exactly B forward steps. This ties the potential to the
+  environment's own coordinates and movement;
 - the Euclidean dead end: on the start side of a vertical line in column k, the Euclidean potential is
   highest at (k − 1, 7), not at the gap;
 - going forward, turning around, going back and turning around again, three times over, ends where it started.
   The naive control pays the one-step progress bonus once per round trip (3 times in total); PBRS with γ = 1
   pays 0;
+- with γ = 0.99, every action that leaves the cell unchanged (turns and the four actions that do nothing in
+  these tasks) earns (γ − 1) · Φ(s), and a 6-step cycle back to the same state earns (γ⁶ − 1) · Φ(s) in the
+  discounted sum: a small bonus with the Euclidean potential, a small cost with the shifted one (H-offset, b);
 - evaluation never sees shaping: the evaluation environment contains no PBRS layer, and evaluation returns
   are identical with and without a `shaping` section in the config.
+
+The two geodesic tests were checked against three deliberately broken versions of the distance (x and y
+swapped, lava treated as passable, every distance off by one): both tests fail on all three.
 
 A short smoke test (8k steps, one seed) confirmed that the shaped, `none` and unshaped configs run, that the
 logged reward equals original + shaping for every training episode, and that evaluation returns stay in
 [0, 1]. It is a code check, not a result.
+
+## Shape of the two distance potentials (no learning)
+
+**Question:** how often does the Euclidean potential point into a dead end, and does the BFS potential ever
+do so? This describes the shaping signal itself, before any training.
+
+**How:** `src/potential_shape.py` takes 1000 maps per task (reset seeds 0–999) and follows *steepest ascent*
+of Φ over the cells the agent can stand on: from a cell, move to the neighbour with the highest Φ if it is
+higher, else stop. A stop before the goal is a local maximum of Φ, i.e. a dead end. Table:
+`results/tables/potential_shape.csv`.
+
+| Potential | Maps where the ascent from the start reaches the goal | Start-side cells whose ascent reaches the goal |
+|---|---|---|
+| Euclidean | 641 / 1000 (64%) | 44% |
+| BFS (geodesic) | 1000 / 1000 | 100% |
+
+**Observations:**
+
+1. On 359 of 1000 maps, steepest ascent of the Euclidean potential from the start stops before the goal, and
+   in every one of these cases it stops on a cell right next to the obstacle line.
+2. From fewer than half of the cells before the line does the Euclidean ascent lead through the gap.
+3. With the BFS potential, the ascent reaches the goal from every start-side cell on all 1000 maps. This
+   holds by construction (every cell has a neighbour one move closer), and the measurement confirms it.
+4. The two tasks generate the same layout for the same seed (only the obstacle type differs), so the numbers
+   are identical for both tasks. On LavaCrossing, the Euclidean dead end lies next to lava.
+
+![Euclidean and BFS potential on two example maps](../../results/figures/potentials_euclidean_vs_bfs.png)
+
+**Interpretation:** the difference between the two potentials is large on these maps, which makes the BFS
+condition informative. Whether it changes learning is the question of EXP-020 (H-dead-end): PPO's policy is
+stochastic and does not follow Φ greedily.
 
 ## Reproducibility of the earlier runs
 
@@ -94,8 +146,9 @@ EXP-010 pilot). From EXP-020 on, every run is launched from committed code.
 
 ## What is still open
 
-- The lava penalty size c, the final condition list and the number of seeds are fixed in the EXP-020
-  pre-registration.
+- The lava penalty follows a rule fixed before any run (c = 1/D, see the
+  [research plan](../research_plan.md#53-shaping)); the final condition list and the number of seeds are
+  fixed in the EXP-020 pre-registration.
 - The expectations H-lava-a, H-lava-b, H-offset, H-dead-end and H-naive ([research plan](../research_plan.md#4-research-questions-and-hypotheses-draft-workflow-step-9))
   are tested by the pre-registered secondary metrics, in particular the outcomes of the first 500k training
   steps, the loop metrics and the never-crossed fraction.

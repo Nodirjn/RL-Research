@@ -27,15 +27,7 @@ archive/**/*.mp4
 # Office lock files
 ~$*
 
-# Kept on disk only, not in the public repository: internal notes, correspondence,
-# and machine/run metadata (run info, training logs, TensorBoard event files).
-RESEARCH_LOG.md
-CLAUDE.md
-RL_tadqiqot_jurnali.*
-RL_batafsil_reja.*
-reports/*message*
-reports/*speech*
-reports/*progress_report*
+# Machine-specific run metadata (run info, training logs, TensorBoard event files), kept on disk only.
 **/meta.json
 **/*.log
 **/events.out.tfevents.*
