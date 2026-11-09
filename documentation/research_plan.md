@@ -44,7 +44,7 @@ the literature defines the method.
 | 7 | Literature review with verified citations | Recent work (2021–2026) searched; papers to be read (section 9.1) | this file |
 | 8 | Research gap | Draft (section 9.2) | this file |
 | 9 | Research questions and hypotheses | Draft (section 4) | this file |
-| 10 | Method | PBRS implemented and tested; experiment not pre-registered yet | [07](stages/07_shaping_method.md) |
+| 10 | Method | PBRS implemented and tested; EXP-020 pre-registered | [07](stages/07_shaping_method.md), [08](stages/08_shaping_experiment.md) |
 | 11 | Validation and ablations | Planned (section 6) | this file |
 | 12 | Paper | Not started | — |
 
@@ -263,10 +263,10 @@ refines the answer to RQ2. The order is: the EXP-020 core, then EXP-021, then th
 conditions can be run, the extension is dropped first. EXP-021 comes before the extension because RQ4 is the
 question least covered by prior work ([section 9.2](#92-research-gap-draft-workflow-step-8)). The baseline
 has 5 seeds per task; the main comparison is planned with 10, because the LavaCrossing baseline varies
-strongly between seeds (final-success SD 0.29). The final number of seeds is fixed in the pre-registration.
+strongly between seeds (final-success SD 0.29).
 
-Before EXP-020 starts, a pre-registration fixes the conditions, the lava penalty c (by the rule in
-section 5.3), the seeds, the metrics, the decision rules and the commit hash.
+The conditions, the lava penalty c (by the rule in section 5.3), the seeds, the metrics, the decision rules
+and the commit hash of EXP-020 are fixed in its pre-registration, [stage 8](stages/08_shaping_experiment.md).
 
 ## 7. Metrics
 
@@ -294,10 +294,18 @@ Periodic evaluation: every 20k steps, 20 episodes on fixed held-out seeds (10000
 ## 8. Statistics
 
 - Per run, then mean ± SD over seeds.
-- Main comparison (shaping against baseline, per task): mean with a 95% bootstrap confidence interval and
-  the probability of improvement, following Agarwal et al. (2021).
-- With 5 vs 5 seeds, the exact two-sided permutation test has a smallest possible p of 0.008. Such tests are
-  reported as exploratory only, without a multiple-comparison correction.
+- **Main comparison (from EXP-020 on, 10 seeds per condition).** One confirmatory metric, the area under the
+  success curve, and a fixed list of comparisons per experiment (nine for EXP-020, see
+  [stage 8](stages/08_shaping_experiment.md#statistics-and-decision-rules)). Each comparison is tested with
+  the exact two-sided permutation test of the difference of means, and the p-values of an experiment are
+  Holm-corrected together at a family-wise level of 0.05. Without a correction, nine tests would give a
+  1 − 0.95⁹ ≈ 0.37 chance of at least one false difference.
+- **Effect sizes:** for every primary metric, the difference of means with a 95% bootstrap confidence
+  interval and the probability of improvement, following Agarwal et al. (2021).
+- **Everything else is exploratory:** the other metrics and the hypothesis checks are reported with
+  intervals, without tests.
+- **Earlier experiments:** with 5 vs 5 seeds (EXP-011 against EXP-012) the smallest possible permutation p is
+  0.008; those tests are reported as exploratory only, without a multiple-comparison correction.
 
 ## 9. Literature (workflow step 7)
 
@@ -384,8 +392,8 @@ This gap is a draft: the papers are to be read, and the search is repeated befor
 
 ## 11. Order of the remaining work
 
-1. Pre-register EXP-020: the conditions, the lava penalty c, the seeds, the metrics, the decision rules and
-   the commit hash.
+1. Pre-register EXP-020 ([stage 8](stages/08_shaping_experiment.md)): the conditions, the lava penalty c,
+   the seeds, the metrics, the decision rules and the commit hash.
 2. Run the core conditions of EXP-020.
 3. Pre-register and run EXP-021 (5×5 view: Euclidean and BFS potentials, 5 more 5×5 baseline seeds).
 4. Run the extension (shifted potential) if there is room.

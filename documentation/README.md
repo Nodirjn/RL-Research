@@ -14,6 +14,7 @@ raw results are in the rest of the repository; the files here point to them.
 | [stages/05_behavior_analysis.md](stages/05_behavior_analysis.md) | How and where the baseline fails: loops and the obstacle line |
 | [stages/06_view_size.md](stages/06_view_size.md) | One environmental change (5×5 view) and the controlled comparison |
 | [stages/07_shaping_method.md](stages/07_shaping_method.md) | The PBRS implementation, its rules and tests (no shaping run yet) |
+| [stages/08_shaping_experiment.md](stages/08_shaping_experiment.md) | EXP-020 pre-registration: shaping conditions, statistics and decision rules |
 
 ## Status
 
@@ -25,10 +26,10 @@ raw results are in the rest of the repository; the files here point to them.
 | 4. Change one environmental factor | Done (5×5 view) |
 | 5. Controlled comparison | Done (5 seeds, exploratory) |
 | 6. Problem statement | Draft |
-| 7. Literature review | In progress |
-| 8. Research gap | Not started |
+| 7. Literature review | Recent work searched; papers to be read |
+| 8. Research gap | Draft |
 | 9. Research questions and hypotheses | Draft |
-| 10. Method | Implemented and tested; experiment not yet pre-registered |
+| 10. Method | Implemented and tested; EXP-020 pre-registered |
 | 11. Validation and ablations | Planned |
 | 12. Paper | Not started |
 

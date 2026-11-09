@@ -10,9 +10,11 @@ Per run (see the EXP-011 pre-registration in RESEARCH_LOG.md):
     steps_50/80    first scheduled evaluation step with success >= 0.5 / 0.8 (empty if never reached)
     greedy_succ    deterministic success on the same 100 episodes (final_eval_greedy.json)
     death, timeout termination rates of the final evaluations; succ_len = mean length of successful episodes
-    train_*_500k   descriptive, not pre-registered: outcome rates of the training episodes that finished
-                   in the first 500k steps (from train_monitor.csv: return > 0 = success, return 0 before the
-                   time limit = death, return 0 at the time limit = timeout)
+    train_*_500k   outcome rates of the training episodes that finished in the first 500k steps (from
+                   train_monitor.csv: the logged outcome, or for unshaped runs return > 0 = success, return 0
+                   before the time limit = death, return 0 at the time limit = timeout); secondary from EXP-020
+    shaping_*, len_*  runs with a `shaping` section: mean shaping return (undiscounted sum of F) and mean
+                   length of all training episodes per outcome (success, death, timeout); empty otherwise
 Per condition: mean ± SD (ddof=1) across seeds; steps_50/80 over the runs that reached the threshold;
 the same training-episode outcome rates per step window (TRAIN_BINS), each the mean of the per-run rates.
 Writes results/tables/<name>_runs.csv and results/figures/<name>_success.png.
@@ -34,8 +36,12 @@ from common import budget_label, load_config, make_env
 EARLY_STEPS = 500_000
 TRAIN_BINS = (0, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_000_000, 3_000_000)
 # Fixed color per condition (validated categorical slots), so a condition keeps its color in every figure.
-COLORS = {"sparse": "#2a78d6", "view5_sparse": "#eb6834"}
-LABELS = {"sparse": "7×7 view, sparse reward", "view5_sparse": "5×5 view, sparse reward"}
+COLORS = {"sparse": "#2a78d6", "view5_sparse": "#eb6834", "euclidean": "#1baf7a", "bfs": "#eda100",
+          "naive": "#e87ba4", "euclidean_lava": "#008300", "shifted": "#6250d6"}
+LABELS = {"sparse": "7×7 view, sparse reward", "view5_sparse": "5×5 view, sparse reward",
+          "euclidean": "Euclidean potential", "bfs": "BFS (geodesic) potential", "naive": "naive control",
+          "euclidean_lava": "Euclidean + lava", "shifted": "shifted potential"}
+OUTCOMES = ("success", "death", "timeout")
 SURFACE, TEXT, TEXT_2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 
 
@@ -65,6 +71,20 @@ def training_outcomes(run_dir, max_steps):
         else:
             outcomes.append((steps, "success" if ret > 0 else "timeout" if length >= max_steps else "death"))
     return outcomes
+
+
+def shaping_by_outcome(run_dir):
+    """Mean shaping return and length of all training episodes per outcome (None without a `shaping` section)."""
+    with open(run_dir / "train_monitor.csv") as f:
+        next(f)  # VecMonitor's JSON header line
+        rows = list(csv.DictReader(f))
+    shaped = bool(rows) and "shaping_return" in rows[0]
+    out = {}
+    for k in OUTCOMES:
+        sel = [r for r in rows if shaped and r["outcome"] == k]
+        out[f"shaping_{k}"] = float(np.mean([float(r["shaping_return"]) for r in sel])) if sel else None
+        out[f"len_{k}"] = float(np.mean([int(r["l"]) for r in sel])) if sel else None
+    return out
 
 
 def outcome_rates(outcomes, start, end):
@@ -101,6 +121,7 @@ def analyze_run(run_dir):
         "succ_len": succ_len(final), "greedy_succ_len": succ_len(greedy),
         "train_succ_500k": early["success"], "train_death_500k": early["death"],
         "train_timeout_500k": early["timeout"], "train_episodes_500k": n_early,
+        **shaping_by_outcome(run_dir),
         "_curve": [(int(r["scheduled_step"]), float(r["success_rate"])) for r in evals],
         "_bins": [outcome_rates(outcomes, a, b)[0] for a, b in zip(TRAIN_BINS, TRAIN_BINS[1:])],
     }
@@ -126,6 +147,10 @@ def print_summary(runs):
             print(f"  {key:20s} {fmt([r[key] for r in rs])}")
         for key in ("succ_len", "greedy_succ_len"):
             print(f"  {key:20s} {fmt([r[key] for r in rs], 1)}")
+        if any(r["shaping_success"] is not None or r["shaping_timeout"] is not None for r in rs):
+            for k in OUTCOMES:
+                print(f"  shaping / len {k:7s} {fmt([r[f'shaping_{k}'] for r in rs])} / "
+                      f"{fmt([r[f'len_{k}'] for r in rs], 1)}")
         for key in ("steps_50", "steps_80"):
             reached = [r[key] / 1e6 for r in rs if r[key] is not None]
             print(f"  {key:20s} {fmt(reached, 2)} M  (reached by {len(reached)}/{len(rs)} seeds)")

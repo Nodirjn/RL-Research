@@ -3,8 +3,7 @@
 **Workflow step:** 10 (method), prepared ahead of steps 7–9 (see the note in the
 [research plan](../research_plan.md#2-workflow)). **Status:** code written and tested; the BFS (geodesic)
 potential verified against an independent shortest-path computation and the environment's own movement. The
-shaping experiment (EXP-020) starts after its pre-registration: the core conditions first, the extension
-after them.
+shaping experiment (EXP-020) is pre-registered in [stage 8](08_shaping_experiment.md).
 
 ## Question
 
@@ -71,7 +70,7 @@ F(s, s′) = γ · Φ(s′) − Φ(s)
 
 ## Tests
 
-`tests/test_shaping.py` (29 tests in the whole suite, all passing) checks, among others:
+`tests/test_shaping.py` (all tests of the suite pass) checks, among others:
 
 - the formula on random steps, the goal step and the lava step with Φ = 0 after termination (the lava step
   gets F = −Φ(s) > 0, as H-lava-a predicts, and is still counted as a death), and the truncation formula;
@@ -147,8 +146,8 @@ EXP-010 pilot). From EXP-020 on, every run is launched from committed code.
 ## What is still open
 
 - The lava penalty follows a rule fixed before any run (c = 1/D, see the
-  [research plan](../research_plan.md#53-shaping)); the final condition list and the number of seeds are
-  fixed in the EXP-020 pre-registration.
+  [research plan](../research_plan.md#53-shaping)); the conditions, seeds, metrics and decision rules of
+  EXP-020 are fixed in its [pre-registration](08_shaping_experiment.md).
 - The expectations H-lava-a, H-lava-b, H-offset, H-dead-end and H-naive ([research plan](../research_plan.md#4-research-questions-and-hypotheses-draft-workflow-step-9))
   are tested by the pre-registered secondary metrics, in particular the outcomes of the first 500k training
   steps, the loop metrics and the never-crossed fraction.

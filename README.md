@@ -29,6 +29,7 @@ The full plan, what was done at each stage and why, and every decision with its 
 | EXP-010 | Pilot on both tasks | 1 × 1M |
 | EXP-011 | Baseline: original sparse reward, 7×7 egocentric view | 5 × 3M per task |
 | EXP-012 | One environmental change: 5×5 view, everything else identical | 5 × 3M per task |
+| EXP-020 | PBRS: Euclidean, BFS (geodesic), Euclidean + lava and a naive control; shifted potential as an extension (pre-registered, not started) | 10 × 3M per condition |
 
 Final policies, mean ± SD over 5 seeds (100 held-out episodes per seed):
 
@@ -41,7 +42,8 @@ Final policies, mean ± SD over 5 seeds (100 held-out episodes per seed):
 
 With 5 seeds, the 5×5 view shows no detectable difference in final success, area under the learning curve
 or steps to 50%/80% success. On LavaCrossing, most failures are timeouts in which the agent never crosses
-the lava line; every greedy failure is a loop. Potential-based shaping experiments are next.
+the lava line; every greedy failure is a loop. The shaping experiment EXP-020 is pre-registered in
+[`documentation/stages/08_shaping_experiment.md`](documentation/stages/08_shaping_experiment.md).
 
 Figures: `results/figures/exp011_vs_exp012_success.png` (learning curves) and
 `results/figures/exp011_exp012_paths.png` (where timed-out episodes spend their steps). Short videos of
@@ -84,7 +86,11 @@ python src/behavior.py experiments/EXP-011 experiments/EXP-012 --name exp011_exp
 
 # shape of the Euclidean and BFS (geodesic) potentials on 1000 maps (no training needed)
 python src/potential_shape.py --maps 1000
+
+# EXP-020 (after its runs): the pre-registered comparisons
+python src/analyze_minigrid.py experiments/EXP-011 experiments/EXP-020 --name exp020
+python src/compare_conditions.py results/tables/exp020_runs.csv --family exp020
 ```
 
-The launchers `src/run_exp01*.sh` run every seed of an experiment in parallel. They write into
-`experiments/EXP-01*/` and use the Python path of the original machine (`PY` in the script).
+The launchers `src/run_exp0*.sh` run every seed of an experiment in parallel. They write into
+`experiments/EXP-0*/` and use the Python path of the original machine (`PY` in the script).
