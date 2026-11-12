@@ -29,7 +29,7 @@ The full plan, what was done at each stage and why, and every decision with its 
 | EXP-010 | Pilot on both tasks | 1 × 1M |
 | EXP-011 | Baseline: original sparse reward, 7×7 egocentric view | 5 × 3M per task |
 | EXP-012 | One environmental change: 5×5 view, everything else identical | 5 × 3M per task |
-| EXP-020 | PBRS: Euclidean, BFS (geodesic), Euclidean + lava and a naive control; shifted potential as an extension (pre-registered, not started) | 10 × 3M per condition |
+| EXP-020 | PBRS: Euclidean, BFS (geodesic), Euclidean + lava and a naive control (core done); shifted potential as an extension (not started) | 10 × 3M per condition |
 
 Final policies, mean ± SD over 5 seeds (100 held-out episodes per seed):
 
@@ -42,10 +42,29 @@ Final policies, mean ± SD over 5 seeds (100 held-out episodes per seed):
 
 With 5 seeds, the 5×5 view shows no detectable difference in final success, area under the learning curve
 or steps to 50%/80% success. On LavaCrossing, most failures are timeouts in which the agent never crosses
-the lava line; every greedy failure is a loop. The shaping experiment EXP-020 is pre-registered in
-[`documentation/stages/08_shaping_experiment.md`](documentation/stages/08_shaping_experiment.md).
+the lava line; every greedy failure is a loop.
 
-Figures: `results/figures/exp011_vs_exp012_success.png` (learning curves) and
+**EXP-020 (core), 10 seeds per condition, 7×7 view.** AUC is the area under the success curve, the
+pre-registered confirmatory metric (nine comparisons, exact permutation tests, Holm-corrected):
+
+| Task | Sparse | Euclidean | BFS (geodesic) | Euclidean + lava | Naive control |
+|---|---|---|---|---|---|
+| SimpleCrossing, AUC | 0.89 ± 0.10 | 0.91 ± 0.08 | 0.88 ± 0.13 | – | 0.00 ± 0.00 |
+| SimpleCrossing, final success | 1.00 ± 0.00 | 0.97 ± 0.02 | 0.98 ± 0.02 | – | 0.00 ± 0.00 |
+| LavaCrossing, AUC | 0.56 ± 0.32 | 0.45 ± 0.35 | 0.84 ± 0.09 | 0.47 ± 0.39 | 0.00 ± 0.00 |
+| LavaCrossing, final success | 0.76 ± 0.34 | 0.61 ± 0.40 | 0.93 ± 0.08 | 0.64 ± 0.34 | 0.00 ± 0.00 |
+
+- On LavaCrossing, the BFS potential learns faster than the Euclidean potential (AUC +0.39 [+0.18, +0.60],
+  Holm p = 0.014) and than the sparse baseline (+0.27 [+0.09, +0.48], Holm p = 0.0499, at the threshold).
+- The Euclidean potential shows no detectable difference from the sparse baseline on either task.
+- The naive (non-potential) bonus prevents learning in all 20 runs; its agents loop.
+- On SimpleCrossing, both potentials lower final success slightly (by about 0.03).
+
+Pre-registration: [`documentation/stages/08_shaping_experiment.md`](documentation/stages/08_shaping_experiment.md);
+results and hypothesis checks: [`documentation/stages/09_shaping_results.md`](documentation/stages/09_shaping_results.md).
+
+Figures: `results/figures/exp011_vs_exp012_success.png` and `results/figures/exp020_success.png` (learning
+curves) and
 `results/figures/exp011_exp012_paths.png` (where timed-out episodes spend their steps). Short videos of
 greedy failures are in `results/videos/`. Per-run tables are in `results/tables/`.
 
@@ -87,9 +106,12 @@ python src/behavior.py experiments/EXP-011 experiments/EXP-012 --name exp011_exp
 # shape of the Euclidean and BFS (geodesic) potentials on 1000 maps (no training needed)
 python src/potential_shape.py --maps 1000
 
-# EXP-020 (after its runs): the pre-registered comparisons
+# EXP-020: the pre-registered comparisons, then the loop, line-crossing and hypothesis checks
 python src/analyze_minigrid.py experiments/EXP-011 experiments/EXP-020 --name exp020
 python src/compare_conditions.py results/tables/exp020_runs.csv --family exp020
+python src/loop_metrics.py experiments/EXP-011 experiments/EXP-020 --name exp020
+python src/behavior.py experiments/EXP-011 experiments/EXP-020 --name exp020
+python src/hypothesis_checks.py --name exp020
 ```
 
 The launchers `src/run_exp0*.sh` run every seed of an experiment in parallel. They write into

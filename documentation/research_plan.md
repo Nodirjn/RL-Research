@@ -44,8 +44,8 @@ the literature defines the method.
 | 7 | Literature review with verified citations | Recent work (2021–2026) searched; papers to be read (section 9.1) | this file |
 | 8 | Research gap | Draft (section 9.2) | this file |
 | 9 | Research questions and hypotheses | Draft (section 4) | this file |
-| 10 | Method | PBRS implemented and tested; EXP-020 pre-registered | [07](stages/07_shaping_method.md), [08](stages/08_shaping_experiment.md) |
-| 11 | Validation and ablations | Planned (section 6) | this file |
+| 10 | Method | PBRS implemented and tested; EXP-020 pre-registered and its core run | [07](stages/07_shaping_method.md), [08](stages/08_shaping_experiment.md) |
+| 11 | Validation and ablations | EXP-020 core done; EXP-021 and the extension planned (section 6) | [09](stages/09_shaping_results.md) |
 | 12 | Paper | Not started | — |
 
 One change of order: the shaping code (step 10) was written before the literature review (step 7). The
@@ -250,11 +250,11 @@ Each experiment changes one thing against the baseline. "Seeds × steps" is per 
 | EXP-010 | Pilot | both | 1 × 1M | Does the pipeline work; which evaluation mode is informative? | Done |
 | EXP-011 | Nothing: baseline, original sparse reward, 7×7 view | both | 5 × 3M | How sample-efficient is sparse-reward PPO? | Done |
 | EXP-012 | Environmental factor: 5×5 view | both | 5 × 3M | How does a smaller view change learning and behavior? | Done |
-| EXP-020 | PBRS, Euclidean potential | both | 10 × 3M | Does a distance signal speed up learning and reduce loops? | Planned (core) |
-| EXP-020 | PBRS, Euclidean + lava-proximity potential | LavaCrossing | 10 × 3M | Does the lava term reduce deaths, or also hinder crossing? | Planned (core) |
-| EXP-020 | PBRS, BFS (geodesic) potential | both | 10 × 3M | Does the Euclidean dead end mislead the agent? | Planned (core) |
-| EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Planned (core) |
-| EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Planned (core) |
+| EXP-020 | PBRS, Euclidean potential | both | 10 × 3M | Does a distance signal speed up learning and reduce loops? | Done (core) |
+| EXP-020 | PBRS, Euclidean + lava-proximity potential | LavaCrossing | 10 × 3M | Does the lava term reduce deaths, or also hinder crossing? | Done (core) |
+| EXP-020 | PBRS, BFS (geodesic) potential | both | 10 × 3M | Does the Euclidean dead end mislead the agent? | Done (core) |
+| EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Done (core) |
+| EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Done (core) |
 | EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Planned (extension) |
 | EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Planned (after the EXP-020 core) |
 
@@ -394,7 +394,7 @@ This gap is a draft: the papers are to be read, and the search is repeated befor
 
 1. Pre-register EXP-020 ([stage 8](stages/08_shaping_experiment.md)): the conditions, the lava penalty c,
    the seeds, the metrics, the decision rules and the commit hash.
-2. Run the core conditions of EXP-020.
+2. Run the core conditions of EXP-020. Done; results in [stage 9](stages/09_shaping_results.md).
 3. Pre-register and run EXP-021 (5×5 view: Euclidean and BFS potentials, 5 more 5×5 baseline seeds).
 4. Run the extension (shifted potential) if there is room.
 5. In parallel with the runs: read the papers of section 9.1 and finalize the research gap (section 9.2).

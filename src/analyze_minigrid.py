@@ -166,6 +166,7 @@ def plot(runs, out):
     tasks = sorted({r["task"] for r in runs}, key=lambda t: ("Lava" in t, t))
     fig, axes = plt.subplots(1, len(tasks), figsize=(5.2 * len(tasks), 3.6), sharey=True, facecolor=SURFACE)
     axes = np.atleast_1d(axes)
+    handles = {}  # condition -> its mean line, from the first panel that has it
     for ax, task in zip(axes, tasks):
         ax.set_facecolor(SURFACE)
         conditions = sorted({r["condition"] for r in runs if r["task"] == task}, key=list(COLORS).index)
@@ -177,7 +178,9 @@ def plot(runs, out):
                 ax.plot(np.array(x) / 1e6, y, color=color, lw=0.8, alpha=0.35)
             steps = sorted({s for r in rs for s, _ in r["_curve"]})
             mean = [np.mean([dict(r["_curve"])[s] for r in rs if s in dict(r["_curve"])]) for s in steps]
-            ax.plot(np.array(steps) / 1e6, mean, color=color, lw=2, label=f"{LABELS.get(cond, cond)}: mean of {len(rs)} seeds")
+            line, = ax.plot(np.array(steps) / 1e6, mean, color=color, lw=2,
+                            label=f"{LABELS.get(cond, cond)}: mean of {len(rs)} seeds")
+            handles.setdefault(cond, line)
         ax.set_title(task, color=TEXT, fontsize=11, loc="left")
         ax.set_xlabel("environment steps (millions)", color=TEXT_2)
         ax.set_ylim(-0.02, 1.02)
@@ -188,11 +191,15 @@ def plot(runs, out):
         for side in ("left", "bottom"):
             ax.spines[side].set_color(GRID)
     axes[0].set_ylabel("eval success rate\n(stochastic policy, 20 episodes)", color=TEXT_2)
-    # One legend under the panels, so it never covers the curves.
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, frameon=False, fontsize=8, labelcolor=TEXT_2, loc="lower center",
-               ncol=len(handles), title="thin lines: single seeds", title_fontsize=8)
-    fig.tight_layout(rect=(0, 0.12, 1, 1))
+    # One legend under the panels, so it never covers the curves. It lists the conditions of every panel
+    # (a condition can exist on one task only) in at most 3 columns, so it fits the figure width.
+    order = sorted(handles, key=list(COLORS).index)
+    ncol = min(3, len(order))
+    n_rows = -(-len(order) // ncol)
+    fig.legend([handles[c] for c in order], [handles[c].get_label() for c in order], frameon=False, fontsize=8,
+               labelcolor=TEXT_2, loc="lower center", ncol=ncol, title="thin lines: single seeds",
+               title_fontsize=8)
+    fig.tight_layout(rect=(0, 0.07 + 0.05 * n_rows, 1, 1))
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=150, facecolor=SURFACE)
     print(f"\nfigure: {out}")

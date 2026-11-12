@@ -15,6 +15,7 @@ raw results are in the rest of the repository; the files here point to them.
 | [stages/06_view_size.md](stages/06_view_size.md) | One environmental change (5×5 view) and the controlled comparison |
 | [stages/07_shaping_method.md](stages/07_shaping_method.md) | The PBRS implementation, its rules and tests (no shaping run yet) |
 | [stages/08_shaping_experiment.md](stages/08_shaping_experiment.md) | EXP-020 pre-registration: shaping conditions, statistics and decision rules |
+| [stages/09_shaping_results.md](stages/09_shaping_results.md) | EXP-020 core results: PBRS (Euclidean, BFS, lava term) and a naive control against the sparse baseline |
 
 ## Status
 
@@ -29,8 +30,8 @@ raw results are in the rest of the repository; the files here point to them.
 | 7. Literature review | Recent work searched; papers to be read |
 | 8. Research gap | Draft |
 | 9. Research questions and hypotheses | Draft |
-| 10. Method | Implemented and tested; EXP-020 pre-registered |
-| 11. Validation and ablations | Planned |
+| 10. Method | Implemented and tested; EXP-020 pre-registered and its core run |
+| 11. Validation and ablations | EXP-020 core done; EXP-021 and the extension planned |
 | 12. Paper | Not started |
 
 ## How each stage is written
