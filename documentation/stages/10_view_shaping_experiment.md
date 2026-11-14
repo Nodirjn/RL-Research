@@ -1,7 +1,7 @@
 # Stage 10 — EXP-021: the shaping conditions with a 5×5 view (pre-registration)
 
 **Workflow step:** 11 (validation). **Status:** pre-registered, not started.
-**Code version:** commit `(filled in at the code commit)` (the configs, the launcher and the analysis scripts
+**Code version:** commit `d50fba2` (the configs, the launcher and the analysis scripts
 used for this experiment). Everything below was fixed before any EXP-021 run.
 
 ## Questions
