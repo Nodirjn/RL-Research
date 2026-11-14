@@ -1,7 +1,8 @@
-"""Exploratory hypothesis checks of EXP-020 (the table in documentation/stages/08_shaping_experiment.md).
+"""Exploratory hypothesis checks of EXP-020 and EXP-021 (the tables in documentation/stages/08 and 10).
 
 Usage (from the project root):
     python src/hypothesis_checks.py --name exp020
+    python src/hypothesis_checks.py --name exp021
 
 Merges the per-run tables of analyze_minigrid.py, loop_metrics.py and behavior.py
 (results/tables/<name>_runs.csv, _loops.csv, _crossing.csv) and reports, for each pre-registered check,
@@ -32,6 +33,12 @@ CHECKS = [
     ("H-naive", (SIMPLE, LAVA), "euclidean", "naive",
      ["greedy_loop_rate", "revisit_ratio"] + OUTCOME_SHAPING),
 ]
+# EXP-021: the checks of EXP-020 that have both conditions with the 5×5 view.
+CHECKS_VIEW5 = [
+    ("H-dead-end", (SIMPLE, LAVA), "view5_euclidean", "view5_bfs", CHECKS[0][4]),
+    ("H-lava-a", (LAVA,), "view5_sparse", "view5_euclidean", ["train_death_500k"]),
+]
+CHECKS_BY_NAME = {"exp020": CHECKS, "exp021": CHECKS_VIEW5}
 
 
 def merged_rows(name):
@@ -50,11 +57,11 @@ def merged_rows(name):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--name", required=True)
+    parser.add_argument("--name", required=True, choices=sorted(CHECKS_BY_NAME))
     args = parser.parse_args()
     rows = merged_rows(args.name)
     results = []
-    for hypothesis, tasks, cond_a, cond_b, metrics in CHECKS:
+    for hypothesis, tasks, cond_a, cond_b, metrics in CHECKS_BY_NAME[args.name]:
         for task in tasks:
             for metric in metrics:
                 if not any(r["task"] == task and r["condition"] in (cond_a, cond_b) and r[metric] != ""

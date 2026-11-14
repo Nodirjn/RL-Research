@@ -62,6 +62,8 @@ pre-registered confirmatory metric (nine comparisons, exact permutation tests, H
 
 Pre-registration: [`documentation/stages/08_shaping_experiment.md`](documentation/stages/08_shaping_experiment.md);
 results and hypothesis checks: [`documentation/stages/09_shaping_results.md`](documentation/stages/09_shaping_results.md).
+The next experiment, EXP-021 (the same potentials with a 5×5 view), is pre-registered in
+[`documentation/stages/10_view_shaping_experiment.md`](documentation/stages/10_view_shaping_experiment.md).
 
 Figures: `results/figures/exp011_vs_exp012_success.png` and `results/figures/exp020_success.png` (learning
 curves) and

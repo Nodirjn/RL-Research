@@ -14,6 +14,8 @@ For every comparison and metric: the means, the difference B - A with a 95% perc
 P(B > A) over all run pairs (ties count 1/2) with its bootstrap interval. For steps to a threshold, a run
 that never reached it counts as the budget (3M), so "higher" means slower. Other empty values are dropped.
 Writes <table stem>_comparisons.csv next to the table.
+
+interaction() gives the view-size interaction contrasts of EXP-021 (used by view_interaction.py).
 """
 import argparse
 import csv
@@ -35,6 +37,13 @@ FAMILIES = {
         for a, b in (("sparse", "euclidean"), ("sparse", "bfs"), ("euclidean", "bfs"),
                      ("euclidean", "euclidean_lava"), ("euclidean", "naive"))
         if not (b == "euclidean_lava" and task == "SimpleCrossingS9N1")  # no lava on SimpleCrossing
+    ],
+    # The same potentials with the 5×5 view (documentation/stages/10_view_shaping_experiment.md).
+    "exp021": [
+        (task, a, b)
+        for task in ("SimpleCrossingS9N1", "LavaCrossingS9N1")
+        for a, b in (("view5_sparse", "view5_euclidean"), ("view5_sparse", "view5_bfs"),
+                     ("view5_euclidean", "view5_bfs"))
     ],
 }
 
@@ -76,6 +85,28 @@ def bootstrap(a, b, seed=0):
     diff = rb.mean(axis=1) - ra.mean(axis=1)
     poi = probability_of_improvement(ra, rb)
     return tuple(np.percentile(diff, [2.5, 97.5])), tuple(np.percentile(poi, [2.5, 97.5]))
+
+
+def interaction(rows, task, a7, b7, a5, b5, metric, level=0.95, seed=0):
+    """(B − A with the 5×5 view) − (B − A with the 7×7 view), with a percentile bootstrap interval.
+
+    The runs are resampled within each of the four groups; level is the coverage of the interval.
+    """
+    names = (a7, b7, a5, b5)
+    groups = [values(rows, task, c, metric) for c in names]
+    for c, g in zip(names, groups):
+        if len(g) == 0:
+            raise SystemExit(f"no runs for {task}: {c} ({metric})")
+    rng = np.random.default_rng(seed)
+    m = [g[rng.integers(0, len(g), (N_BOOTSTRAP, len(g)))].mean(axis=1) for g in groups]
+    tail = 100 * (1 - level) / 2
+    lo, hi = np.percentile((m[3] - m[2]) - (m[1] - m[0]), [tail, 100 - tail])
+    effect7, effect5 = groups[1].mean() - groups[0].mean(), groups[3].mean() - groups[2].mean()
+    return {"task": task, "A7": a7, "B7": b7, "A5": a5, "B5": b5, "metric": metric,
+            **{f"n_{k}": len(g) for k, g in zip(("a7", "b7", "a5", "b5"), groups)},
+            **{f"mean_{k}": g.mean() for k, g in zip(("a7", "b7", "a5", "b5"), groups)},
+            "effect7": effect7, "effect5": effect5, "interaction": effect5 - effect7,
+            "level": level, "ci_low": lo, "ci_high": hi}
 
 
 def holm(p_values):

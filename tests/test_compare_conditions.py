@@ -13,7 +13,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 import permutation_test  # noqa: E402
-from compare_conditions import (FAMILIES, bootstrap, compare, holm, permutation_p,  # noqa: E402
+from compare_conditions import (FAMILIES, bootstrap, compare, holm, interaction, permutation_p,  # noqa: E402
                                 probability_of_improvement, run_family)
 
 FIELDS = ("run", "task", "condition", "seed", "auc", "final_succ", "steps_50", "steps_80")
@@ -64,6 +64,50 @@ def test_the_exp020_family_has_nine_comparisons_with_a_config_for_every_conditio
         for cond in (a, b):
             name = "simplecrossing" if task.startswith("Simple") else "lavacrossing"
             assert (ROOT / "configs" / f"exp020_{name}_{cond}.yaml").exists()
+
+
+def test_the_exp021_family_has_six_comparisons_with_a_config_for_every_condition():
+    family = FAMILIES["exp021"]
+    assert len(family) == 6 and len(set(family)) == 6
+    for task, a, b in family:
+        for cond in (a, b):
+            name = "simplecrossing" if task.startswith("Simple") else "lavacrossing"
+            assert cond.startswith("view5_")
+            assert (ROOT / "configs" / f"exp021_{name}_{cond[len('view5_'):]}.yaml").exists()
+
+
+def view_rows(means, n=10, sd=0.0, seed=0):
+    """Rows for the four groups of an interaction; means maps condition -> mean of the metric."""
+    rng = np.random.default_rng(seed)
+    return [{"task": "T", "condition": cond, "x": str(mean + sd * rng.normal())}
+            for cond, mean in means.items() for _ in range(n)]
+
+
+def test_interaction_is_the_difference_of_the_two_view_effects():
+    rows = view_rows({"a7": 0.5, "b7": 0.6, "a5": 0.4, "b5": 0.8})
+    r = interaction(rows, "T", "a7", "b7", "a5", "b5", "x")
+    assert r["effect7"] == pytest.approx(0.1) and r["effect5"] == pytest.approx(0.4)
+    assert r["interaction"] == pytest.approx(0.3)
+    assert r["ci_low"] == pytest.approx(0.3) and r["ci_high"] == pytest.approx(0.3)  # no spread within groups
+    assert (r["n_a7"], r["n_b5"]) == (10, 10)
+
+
+def test_interaction_interval_covers_the_estimate_widens_with_the_level_and_is_reproducible():
+    rows = view_rows({"a7": 0.5, "b7": 0.6, "a5": 0.4, "b5": 0.8}, sd=0.1)
+    r95 = interaction(rows, "T", "a7", "b7", "a5", "b5", "x")
+    r99 = interaction(rows, "T", "a7", "b7", "a5", "b5", "x", level=1 - 0.05 / 4)
+    assert r95["ci_low"] < r95["interaction"] < r95["ci_high"]
+    assert r99["ci_low"] < r95["ci_low"] and r99["ci_high"] > r95["ci_high"]
+    assert interaction(rows, "T", "a7", "b7", "a5", "b5", "x") == r95  # fixed seed
+    no_interaction = view_rows({"a7": 0.5, "b7": 0.6, "a5": 0.4, "b5": 0.5}, sd=0.1)
+    r = interaction(no_interaction, "T", "a7", "b7", "a5", "b5", "x")
+    assert r["ci_low"] < 0 < r["ci_high"]
+
+
+def test_interaction_stops_when_a_group_has_no_runs():
+    rows = view_rows({"a7": 0.5, "b7": 0.6, "a5": 0.4})
+    with pytest.raises(SystemExit, match="b5"):
+        interaction(rows, "T", "a7", "b7", "a5", "b5", "x")
 
 
 def synthetic_rows():

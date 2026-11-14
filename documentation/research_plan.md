@@ -4,8 +4,9 @@
 navigation with a limited egocentric view.
 
 **Status:** workflow steps 1–5 are done (audit, baseline, behavior analysis, one environmental change,
-controlled comparison). The shaping method is implemented and unit-tested. No shaping experiment has been
-run yet; its conditions are fixed in a pre-registration before the first run. What was done in each step,
+controlled comparison). The shaping method is implemented and unit-tested. The main shaping experiment
+(EXP-020, 7×7 view) has been run ([stage 9](stages/09_shaping_results.md)); the 5×5-view experiment
+(EXP-021) is pre-registered ([stage 10](stages/10_view_shaping_experiment.md)). What was done in each step,
 and why, is in
 [`stages/`](stages/); every decision and its reason is in [`decisions.md`](decisions.md).
 
@@ -45,7 +46,7 @@ the literature defines the method.
 | 8 | Research gap | Draft (section 9.2) | this file |
 | 9 | Research questions and hypotheses | Draft (section 4) | this file |
 | 10 | Method | PBRS implemented and tested; EXP-020 pre-registered and its core run | [07](stages/07_shaping_method.md), [08](stages/08_shaping_experiment.md) |
-| 11 | Validation and ablations | EXP-020 core done; EXP-021 and the extension planned (section 6) | [09](stages/09_shaping_results.md) |
+| 11 | Validation and ablations | EXP-020 core done; EXP-021 pre-registered; the extension planned (section 6) | [09](stages/09_shaping_results.md), [10](stages/10_view_shaping_experiment.md) |
 | 12 | Paper | Not started | — |
 
 One change of order: the shaping code (step 10) was written before the literature review (step 7). The
@@ -256,7 +257,7 @@ Each experiment changes one thing against the baseline. "Seeds × steps" is per 
 | EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Done (core) |
 | EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Done (core) |
 | EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Planned (extension) |
-| EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Planned (after the EXP-020 core) |
+| EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Pre-registered ([stage 10](stages/10_view_shaping_experiment.md)) |
 
 The core conditions answer RQ1 to RQ3, EXP-021 answers RQ4, and the extension (the shifted potential)
 refines the answer to RQ2. The order is: the EXP-020 core, then EXP-021, then the extension; if not all
@@ -271,7 +272,8 @@ and the commit hash of EXP-020 are fixed in its pre-registration, [stage 8](stag
 ## 7. Metrics
 
 The primary metrics were pre-registered before the EXP-011 baseline and stay the same for all later
-experiments. Secondary metrics marked † were added after the baseline analysis, before any shaping run.
+experiments. Secondary metrics marked † were added after the baseline analysis, before any shaping run;
+‡ marks a metric added for EXP-021, before its runs.
 Each metric is computed per run.
 
 | Metric | Meaning | Type |
@@ -286,6 +288,7 @@ Each metric is computed per run.
 | Revisit ratio | Fraction of steps that end in an already visited state (stochastic) | Secondary |
 | Never-crossed timeouts † | Fraction of timed-out episodes that never cross the obstacle line | Secondary |
 | First 500k steps † | Success, death and timeout rates of training episodes; tests H-lava-a and H-offset | Secondary |
+| Steps after crossing ‡ | Steps from the first step on the goal side of the line to the goal, mean over successful episodes; where the 5×5 view costs the agent steps (RQ4) | Secondary; confirmatory for RQ4 |
 | Shaping return by outcome † | Sum of F per training episode, reported separately for successes, deaths and timeouts, with the episode length. It is undiscounted, so with Φ < 0 it grows with the length (+3.24 for a timeout spent turning at the start); it shows where the shaping signal goes (H-offset, H-naive) | Secondary |
 | Original and shaped return | Logged separately; evaluation uses the original reward only | Control |
 
@@ -300,6 +303,11 @@ Periodic evaluation: every 20k steps, 20 episodes on fixed held-out seeds (10000
   the exact two-sided permutation test of the difference of means, and the p-values of an experiment are
   Holm-corrected together at a family-wise level of 0.05. Without a correction, nine tests would give a
   1 − 0.95⁹ ≈ 0.37 chance of at least one false difference.
+- **EXP-021 ([stage 10](stages/10_view_shaping_experiment.md#statistics-and-decision-rules)).** Six AUC
+  comparisons with the 5×5 view, tested as above and Holm-corrected together. RQ4 is an interaction of
+  shaping and view size; it is decided on four interaction contrasts of the steps after crossing, with
+  bootstrap intervals at 98.75% (Bonferroni over four). The AUC interaction has too little room for a
+  test (BFS already reaches 0.84 with 7×7) and is reported as an estimate.
 - **Effect sizes:** for every primary metric, the difference of means with a 95% bootstrap confidence
   interval and the probability of improvement, following Agarwal et al. (2021).
 - **Everything else is exploratory:** the other metrics and the hypothesis checks are reported with
@@ -335,6 +343,8 @@ confirmed by reading before the paper cites them.
 | Baisero & Amato (2022), AAMAS | A critic based on the state alone can be biased under partial observability; caveat for H-view | Existence checked; to read |
 | Lambrechts, Ernst & Mahajan (2025), ICML | An asymmetric critic removes error terms caused by aliased observations; background for H-view | Existence checked; to read |
 | Ebi et al. (2026), ICML | Any state-dependent privileged signal given to the critic keeps policy gradients unbiased; the signals include the distance to the target | Existence and key claim checked; to read |
+| Carr et al. (2023), AAAI | Shielded RL in partially observable gridworlds (REINFORCE, DQN), with learning curves under partial and full observability, each with and without a dense distance reward (not in potential form); notes that shaping has side effects especially under partial observability; the interaction is not analyzed. The closest result to H-view found | Key claims checked in the arXiv full text; to read |
+| Syed (2026), arXiv preprint | PBRS with a potential computed from the egocentric 7×7 observation, PPO on MiniGrid tasks (incl. LavaGapS5); the view size is not varied | Existence and key claims checked (arXiv HTML); to read |
 | Sun et al. (2022), NeurIPS | A constant reward shift equals a shift of the initial Q-values (value-based deep RL); background for H-offset | Existence checked; to read |
 | Forbes et al. (2024), AAMAS | Exploration bonuses turned into potential form so that the optimal policy is kept; MiniGrid | Existence checked; to read |
 | Zhang et al. (2021), NeurIPS (NovelD; arXiv predecessor BeBold) | A clipped difference bonus like the naive control needed a guard against back-and-forth farming | Existence checked; to read |
@@ -355,6 +365,8 @@ Every entry of the bibliography is checked against its primary source before it 
 - Privileged information used only by the critic keeps policy gradients unbiased and can help under partial
   observability (Lambrechts et al., 2025; Ebi et al., 2026), but a critic based on the state alone can also be
   biased (Baisero & Amato, 2022).
+- Dense distance rewards have been run under both partial and full observability (Carr et al., 2023), but
+  as separate ablations, with a binary change of observability and a reward not in potential form.
 
 **What the search did not find:**
 
@@ -363,7 +375,7 @@ Every entry of the bibliography is checked against its primary source before it 
    the failure modes measured (looping before the obstacle, never crossing it, deaths), not only success.
 2. A test of whether the benefit of PBRS depends on how much the agent sees. With GAE, PBRS acts like adding
    Φ to the critic (H-view), which links it to asymmetric actor-critic methods, but no study found varies the
-   view size to test this.
+   view size to test this, or tests the interaction of shaping and observability.
 
 The study therefore does not claim the Euclidean dead end as a new finding; its contribution is (1) and (2).
 This gap is a draft: the papers are to be read, and the search is repeated before the paper is written.
@@ -396,6 +408,7 @@ This gap is a draft: the papers are to be read, and the search is repeated befor
    the seeds, the metrics, the decision rules and the commit hash.
 2. Run the core conditions of EXP-020. Done; results in [stage 9](stages/09_shaping_results.md).
 3. Pre-register and run EXP-021 (5×5 view: Euclidean and BFS potentials, 5 more 5×5 baseline seeds).
+   Pre-registered in [stage 10](stages/10_view_shaping_experiment.md).
 4. Run the extension (shifted potential) if there is room.
 5. In parallel with the runs: read the papers of section 9.1 and finalize the research gap (section 9.2).
 6. Analysis with the same scripts as the baseline (`analyze_minigrid.py`, `loop_metrics.py`, `behavior.py`)

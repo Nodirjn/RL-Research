@@ -37,10 +37,14 @@ EARLY_STEPS = 500_000
 TRAIN_BINS = (0, 50_000, 100_000, 250_000, 500_000, 1_000_000, 2_000_000, 3_000_000)
 # Fixed color per condition (validated categorical slots), so a condition keeps its color in every figure.
 COLORS = {"sparse": "#2a78d6", "view5_sparse": "#eb6834", "euclidean": "#1baf7a", "bfs": "#eda100",
-          "naive": "#e87ba4", "euclidean_lava": "#008300", "shifted": "#6250d6"}
+          "naive": "#e87ba4", "euclidean_lava": "#008300", "shifted": "#6250d6",
+          # EXP-021: the 5×5 shaping conditions take the color of their potential. Its figure shows the 5×5
+          # groups only, so they never share a figure with the 7×7 ones.
+          "view5_euclidean": "#1baf7a", "view5_bfs": "#eda100"}
 LABELS = {"sparse": "7×7 view, sparse reward", "view5_sparse": "5×5 view, sparse reward",
           "euclidean": "Euclidean potential", "bfs": "BFS (geodesic) potential", "naive": "naive control",
-          "euclidean_lava": "Euclidean + lava", "shifted": "shifted potential"}
+          "euclidean_lava": "Euclidean + lava", "shifted": "shifted potential",
+          "view5_euclidean": "5×5 view, Euclidean potential", "view5_bfs": "5×5 view, BFS (geodesic) potential"}
 OUTCOMES = ("success", "death", "timeout")
 SURFACE, TEXT, TEXT_2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e4e3df"
 
