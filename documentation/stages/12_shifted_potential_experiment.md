@@ -1,7 +1,7 @@
 # Stage 12 — EXP-022: the shifted BFS potential with a 5×5 view (pre-registration)
 
 **Workflow step:** 11 (validation and ablations). **Status:** pre-registered, not started.
-**Code version:** commit `(filled in at the code commit)` (the config, the launcher and the analysis scripts
+**Code version:** commit `5fb543e` (the config, the launcher and the analysis scripts
 used for this experiment). Everything below was fixed before any EXP-022 run.
 
 ## Why this experiment
