@@ -1,6 +1,6 @@
 # Stage 12 — EXP-022: the shifted BFS potential with a 5×5 view (pre-registration)
 
-**Workflow step:** 11 (validation and ablations). **Status:** pre-registered, not started.
+**Workflow step:** 11 (validation and ablations). **Status:** run and analyzed (10 of 10 runs finished; results below).
 **Code version:** commit `5fb543e` (the config, the launcher and the analysis scripts
 used for this experiment). Everything below was fixed before any EXP-022 run.
 
@@ -87,3 +87,28 @@ seed, with 95% bootstrap intervals and the probability of improvement where a co
   python src/compare_conditions.py results/tables/exp022_runs.csv --pairs view5_bfs:view5_bfs_shifted view5_sparse:view5_bfs_shifted
   python src/compare_conditions.py results/tables/exp022_loops.csv --pairs view5_bfs:view5_bfs_shifted view5_sparse:view5_bfs_shifted --metrics greedy_loop_rate revisit_ratio
   ```
+
+## Results (exploratory)
+
+All 10 runs finished; none was rerun or excluded. The analysis is the one listed above, at the code commit
+named at the top. Tables: `results/tables/exp022_*`; figure: `results/figures/exp022_success.png`.
+
+| SimpleCrossing, 5×5 view | Sparse | BFS, Φ = −b/B | Shifted BFS, Φ = 1 − b/B |
+|---|---|---|---|
+| Runs that never learn (final success < 0.1) | 0 of 10 | 3 of 10 (seeds 4, 5, 8) | 2 of 10 (seeds 4, 6) |
+| AUC, mean ± SD | 0.937 ± 0.047 | 0.651 ± 0.449 | 0.614 ± 0.370 |
+| Greedy loop rate, mean | 0.128 | 0.412 | 0.467 |
+| Runs with training success below 0.05 at 500k steps | 0 of 10 | 3 of 10 | 5 of 10 |
+
+- Shifted against plain BFS: AUC −0.037 [−0.376, +0.309], P(B > A) 0.34; greedy loop rate +0.055
+  [−0.272, +0.374]; revisit ratio −0.043 [−0.341, +0.259].
+- Shifted against sparse: AUC −0.323 [−0.551, −0.119], P(B > A) 0.05; greedy loop rate +0.339 [+0.125, +0.573].
+- Seed 4 never learns with either potential; seeds 5 and 8 learn with the offset (seed 5 late, AUC 0.46);
+  seed 6 learns with the plain potential (AUC 0.98) but not with the offset.
+- The offset reverses the order of the shaping return by outcome, as intended: in the 8 runs that learn, a
+  training episode that ends at the time limit collects −0.61 to −0.85 (undiscounted sum of F), one that
+  reaches the goal −0.10 to −0.16.
+- **Reading.** H-offset is not supported: removing the per-step bonus of a negative potential neither removes
+  the runs that never learn nor lowers the greedy loop rate, and early learning is slower (the expected cost).
+  The cause of the failure of the BFS potential with the 5×5 view remains open. With 10 runs per group the
+  counts show a direction only.

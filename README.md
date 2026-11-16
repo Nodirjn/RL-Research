@@ -62,13 +62,17 @@ pre-registered confirmatory metric (nine comparisons, exact permutation tests, H
 
 Pre-registration: [`documentation/stages/08_shaping_experiment.md`](documentation/stages/08_shaping_experiment.md);
 results and hypothesis checks: [`documentation/stages/09_shaping_results.md`](documentation/stages/09_shaping_results.md).
-The next experiment, EXP-021 (the same potentials with a 5×5 view), is pre-registered in
-[`documentation/stages/10_view_shaping_experiment.md`](documentation/stages/10_view_shaping_experiment.md).
-An exploratory follow-up, EXP-022 (the shifted BFS potential with a 5×5 view), is pre-registered in
-[`documentation/stages/12_shifted_potential_experiment.md`](documentation/stages/12_shifted_potential_experiment.md).
+EXP-021 repeats the potentials with a 5×5 view
+([`documentation/stages/10_view_shaping_experiment.md`](documentation/stages/10_view_shaping_experiment.md)).
+On LavaCrossing the BFS potential again learns faster than the sparse baseline (AUC +0.35, Holm p = 0.007)
+and than the Euclidean potential (+0.34, Holm p = 0.010). The view size does not detectably change the
+benefit of shaping (RQ4). With the 5×5 view, 3 of the 10 BFS runs on SimpleCrossing never learn and loop.
+The exploratory follow-up EXP-022
+([`documentation/stages/12_shifted_potential_experiment.md`](documentation/stages/12_shifted_potential_experiment.md))
+shows that the shifted potential 1 − b/B does not remove this failure (2 of 10 runs never learn).
 
-Figures: `results/figures/exp011_vs_exp012_success.png` and `results/figures/exp020_success.png` (learning
-curves) and
+Figures: `results/figures/exp011_vs_exp012_success.png`, `results/figures/exp020_success.png`,
+`results/figures/exp021_success.png` and `results/figures/exp022_success.png` (learning curves) and
 `results/figures/exp011_exp012_paths.png` (where timed-out episodes spend their steps). Short videos of
 greedy failures are in `results/videos/`. Per-run tables are in `results/tables/`.
 

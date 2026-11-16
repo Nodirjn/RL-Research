@@ -1,6 +1,6 @@
 # Stage 10 — EXP-021: the shaping conditions with a 5×5 view (pre-registration)
 
-**Workflow step:** 11 (validation). **Status:** pre-registered, not started.
+**Workflow step:** 11 (validation). **Status:** run and analyzed (50 of 50 runs finished; results below).
 **Code version:** commit `d50fba2` (the configs, the launcher and the analysis scripts
 used for this experiment). Everything below was fixed before any EXP-021 run.
 
@@ -166,3 +166,34 @@ that have both conditions with the 5×5 view:
   ```
 
   The 7×7 tables (`exp020_*`) are those of stage 9 and are not recomputed.
+
+## Results
+
+All 50 runs finished; none was rerun or excluded. The analysis is the one listed above, at the code commit
+named at the top. Tables: `results/tables/exp021_*`; figures: `results/figures/exp021_success.png` and
+`results/figures/exp021_paths.png`.
+
+**Confirmatory AUC comparisons, 5×5 view** (exact permutation test, Holm over the 6 comparisons; difference
+of means with its 95% bootstrap interval):
+
+| Comparison | Task | AUC difference | Holm p |
+|---|---|---|---|
+| BFS − sparse | LavaCrossing | +0.354 [+0.177, +0.544] | 0.0070 |
+| BFS − Euclidean | LavaCrossing | +0.339 [+0.151, +0.538] | 0.0099 |
+| Euclidean − sparse | LavaCrossing | +0.015 [−0.231, +0.260] | 0.91 |
+| Euclidean − sparse | SimpleCrossing | −0.115 [−0.160, −0.071] | 0.0018 |
+| BFS − sparse | SimpleCrossing | −0.286 [−0.570, −0.024] | 0.22 |
+| BFS − Euclidean | SimpleCrossing | −0.172 [−0.458, +0.085] | 0.42 |
+
+- The BFS advantage on LavaCrossing seen with the 7×7 view (stage 9) is replicated with the 5×5 view.
+- **RQ4 (view size × shaping).** All four interaction contrasts on the greedy steps after crossing have a
+  98.75% interval that contains 0: SimpleCrossing Euclidean −2.17 [−5.50, +0.85], SimpleCrossing BFS −1.70
+  [−7.43, +3.10], LavaCrossing Euclidean −4.54 [−17.69, +6.62], LavaCrossing BFS +2.70 [−2.53, +8.17] steps
+  (`results/tables/exp021_interactions.csv`). There is no evidence that shaping helps more with the smaller
+  view. On AUC (estimate only) the interaction is negative on SimpleCrossing (Euclidean −0.130 [−0.216, −0.044],
+  BFS −0.280 [−0.571, −0.011]) and close to 0 on LavaCrossing.
+- **H-lava-a (exploratory).** The training death rate in the first 500k steps on LavaCrossing rises from 0.187
+  (sparse) to 0.582 (Euclidean); with the 7×7 view it was 0.225 and 0.533.
+- **Unexpected failure (exploratory).** On SimpleCrossing, 3 of the 10 BFS runs (seeds 4, 5 and 8) never learn:
+  AUC 0.00, nearly every training episode ends at the time limit and the final greedy policy loops in every
+  evaluation episode. This observation led to EXP-022 ([stage 12](12_shifted_potential_experiment.md)).

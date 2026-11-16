@@ -6,7 +6,8 @@ navigation with a limited egocentric view.
 **Status:** workflow steps 1–5 are done (audit, baseline, behavior analysis, one environmental change,
 controlled comparison). The shaping method is implemented and unit-tested. The main shaping experiment
 (EXP-020, 7×7 view) has been run ([stage 9](stages/09_shaping_results.md)); the 5×5-view experiment
-(EXP-021) is pre-registered ([stage 10](stages/10_view_shaping_experiment.md)). What was done in each step,
+(EXP-021, [stage 10](stages/10_view_shaping_experiment.md)) and its exploratory follow-up (EXP-022,
+[stage 12](stages/12_shifted_potential_experiment.md)) have been run. What was done in each step,
 and why, is in
 [`stages/`](stages/); every decision and its reason is in [`decisions.md`](decisions.md).
 
@@ -46,7 +47,7 @@ the literature defines the method.
 | 8 | Research gap | Draft (section 9.2) | this file |
 | 9 | Research questions and hypotheses | Draft (section 4) | this file |
 | 10 | Method | PBRS implemented and tested; EXP-020 pre-registered and its core run | [07](stages/07_shaping_method.md), [08](stages/08_shaping_experiment.md) |
-| 11 | Validation and ablations | EXP-020 core done; EXP-021 pre-registered; the extension planned (section 6) | [09](stages/09_shaping_results.md), [10](stages/10_view_shaping_experiment.md) |
+| 11 | Validation and ablations | EXP-020 core, EXP-021 and EXP-022 done (section 6) | [09](stages/09_shaping_results.md), [10](stages/10_view_shaping_experiment.md), [12](stages/12_shifted_potential_experiment.md) |
 | 12 | Paper | Not started | — |
 
 One change of order: the shaping code (step 10) was written before the literature review (step 7). The
@@ -257,8 +258,8 @@ Each experiment changes one thing against the baseline. "Seeds × steps" is per 
 | EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Done (core) |
 | EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Done (core) |
 | EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Replaced by EXP-022 (decision 49) |
-| EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Pre-registered ([stage 10](stages/10_view_shaping_experiment.md)) |
-| EXP-022 | Shifted BFS potential 1 − b/B, 5×5 view (exploratory follow-up of EXP-021) | SimpleCrossing | 10 × 3M | Does the offset remove the loops of the BFS runs that never learned? | Pre-registered ([stage 12](stages/12_shifted_potential_experiment.md)) |
+| EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Done ([stage 10](stages/10_view_shaping_experiment.md)) |
+| EXP-022 | Shifted BFS potential 1 − b/B, 5×5 view (exploratory follow-up of EXP-021) | SimpleCrossing | 10 × 3M | Does the offset remove the loops of the BFS runs that never learned? | Done ([stage 12](stages/12_shifted_potential_experiment.md)) |
 
 The core conditions answer RQ1 to RQ3, EXP-021 answers RQ4, and the extension (the shifted potential)
 refines the answer to RQ2. The order is: the EXP-020 core, then EXP-021, then the extension; if not all
@@ -409,9 +410,9 @@ This gap is a draft: the papers are to be read, and the search is repeated befor
    the seeds, the metrics, the decision rules and the commit hash.
 2. Run the core conditions of EXP-020. Done; results in [stage 9](stages/09_shaping_results.md).
 3. Pre-register and run EXP-021 (5×5 view: Euclidean and BFS potentials, 5 more 5×5 baseline seeds).
-   Pre-registered in [stage 10](stages/10_view_shaping_experiment.md).
+   Done; pre-registration and results in [stage 10](stages/10_view_shaping_experiment.md).
 4. Run the extension (shifted potential) if there is room. Replaced by EXP-022, the shifted BFS potential on
-   SimpleCrossing with the 5×5 view ([stage 12](stages/12_shifted_potential_experiment.md), decision 49).
+   SimpleCrossing with the 5×5 view ([stage 12](stages/12_shifted_potential_experiment.md), decision 49). Done.
 5. In parallel with the runs: read the papers of section 9.1 and finalize the research gap (section 9.2).
 6. Analysis with the same scripts as the baseline (`analyze_minigrid.py`, `loop_metrics.py`, `behavior.py`)
    and the statistics of section 8.
