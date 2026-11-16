@@ -17,6 +17,7 @@ raw results are in the rest of the repository; the files here point to them.
 | [stages/08_shaping_experiment.md](stages/08_shaping_experiment.md) | EXP-020 pre-registration: shaping conditions, statistics and decision rules |
 | [stages/09_shaping_results.md](stages/09_shaping_results.md) | EXP-020 core results: PBRS (Euclidean, BFS, lava term) and a naive control against the sparse baseline |
 | [stages/10_view_shaping_experiment.md](stages/10_view_shaping_experiment.md) | EXP-021 pre-registration: the shaping conditions with a 5×5 view, and the view-size interaction (RQ4) |
+| [stages/12_shifted_potential_experiment.md](stages/12_shifted_potential_experiment.md) | EXP-022 pre-registration: the shifted BFS potential with a 5×5 view (exploratory follow-up of EXP-021) |
 
 ## Status
 

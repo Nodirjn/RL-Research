@@ -64,6 +64,8 @@ Pre-registration: [`documentation/stages/08_shaping_experiment.md`](documentatio
 results and hypothesis checks: [`documentation/stages/09_shaping_results.md`](documentation/stages/09_shaping_results.md).
 The next experiment, EXP-021 (the same potentials with a 5×5 view), is pre-registered in
 [`documentation/stages/10_view_shaping_experiment.md`](documentation/stages/10_view_shaping_experiment.md).
+An exploratory follow-up, EXP-022 (the shifted BFS potential with a 5×5 view), is pre-registered in
+[`documentation/stages/12_shifted_potential_experiment.md`](documentation/stages/12_shifted_potential_experiment.md).
 
 Figures: `results/figures/exp011_vs_exp012_success.png` and `results/figures/exp020_success.png` (learning
 curves) and

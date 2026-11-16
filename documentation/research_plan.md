@@ -256,8 +256,9 @@ Each experiment changes one thing against the baseline. "Seeds × steps" is per 
 | EXP-020 | PBRS, BFS (geodesic) potential | both | 10 × 3M | Does the Euclidean dead end mislead the agent? | Done (core) |
 | EXP-020 | Naive control (ablation) | both | 10 × 3M | Why does the potential form matter? | Done (core) |
 | EXP-020 | 5 more baseline seeds | both | +5 × 3M | Baseline for a 10-seed comparison | Done (core) |
-| EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Planned (extension) |
+| EXP-020 | Shifted potential 1 − d/D | LavaCrossing | 10 × 3M | Fewer early deaths, at what cost? | Replaced by EXP-022 (decision 49) |
 | EXP-021 | 5×5 view × shaping: Euclidean and BFS potentials, plus 5 more 5×5 baseline seeds | both | 10 × 3M | Does shaping help more with a smaller view? | Pre-registered ([stage 10](stages/10_view_shaping_experiment.md)) |
+| EXP-022 | Shifted BFS potential 1 − b/B, 5×5 view (exploratory follow-up of EXP-021) | SimpleCrossing | 10 × 3M | Does the offset remove the loops of the BFS runs that never learned? | Pre-registered ([stage 12](stages/12_shifted_potential_experiment.md)) |
 
 The core conditions answer RQ1 to RQ3, EXP-021 answers RQ4, and the extension (the shifted potential)
 refines the answer to RQ2. The order is: the EXP-020 core, then EXP-021, then the extension; if not all
@@ -409,7 +410,8 @@ This gap is a draft: the papers are to be read, and the search is repeated befor
 2. Run the core conditions of EXP-020. Done; results in [stage 9](stages/09_shaping_results.md).
 3. Pre-register and run EXP-021 (5×5 view: Euclidean and BFS potentials, 5 more 5×5 baseline seeds).
    Pre-registered in [stage 10](stages/10_view_shaping_experiment.md).
-4. Run the extension (shifted potential) if there is room.
+4. Run the extension (shifted potential) if there is room. Replaced by EXP-022, the shifted BFS potential on
+   SimpleCrossing with the 5×5 view ([stage 12](stages/12_shifted_potential_experiment.md), decision 49).
 5. In parallel with the runs: read the papers of section 9.1 and finalize the research gap (section 9.2).
 6. Analysis with the same scripts as the baseline (`analyze_minigrid.py`, `loop_metrics.py`, `behavior.py`)
    and the statistics of section 8.
